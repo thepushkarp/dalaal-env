@@ -1,9 +1,29 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "dalaal-env"
+name = "openenv-dalaal-env"
 version = "0.1.0"
-description = "Add your description here"
+description = "Website responsiveness audit RL environment for OpenEnv"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "openenv-core>=0.2.3",
+    "beautifulsoup4>=4.12.0",
+    "tinycss2>=1.3.0",
+    "lxml>=5.0.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+server = "dalaal_env.server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["dalaal_env", "dalaal_env.analyzer", "dalaal_env.server"]
+package-dir = { "dalaal_env" = "dalaal_env", "dalaal_env.analyzer" = "dalaal_env/analyzer", "dalaal_env.server" = "dalaal_env/server" }
