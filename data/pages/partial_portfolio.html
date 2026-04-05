@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mara Silva — Portfolio</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; background: #fafafa; }
+
+        /* Nav — flexible, no issues */
+        header { background: #fff; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 10; }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem;
+                     display: flex; justify-content: space-between; align-items: center; height: 60px; }
+        .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.05em; }
+        nav a { text-decoration: none; color: #555; margin-left: 1.5rem; font-size: 0.9rem; }
+
+        /* Hero — flexible */
+        .hero { max-width: 1100px; margin: 60px auto 40px; padding: 0 1.5rem;
+                display: flex; align-items: center; gap: 3rem; }
+        .hero-text h1 { font-size: 2.2rem; line-height: 1.2; margin-bottom: 1rem; }
+        .hero-text p { color: #555; line-height: 1.7; max-width: 500px; }
+        .hero-cta { display: inline-block; margin-top: 1.5rem; padding: 0.75rem 1.75rem;
+                    background: #1a1a1a; color: #fff; text-decoration: none; border-radius: 2px;
+                    font-size: 0.9rem; }
+        /* ISSUE: hero image fixed width — overflows on narrow mobile */
+        .hero-image img { width: 400px; height: 400px; object-fit: cover;
+                          border-radius: 8px; display: block; }
+
+        /* Work section — flex wrap, flexible */
+        .section { max-width: 1100px; margin: 0 auto; padding: 3rem 1.5rem; }
+        .section h2 { font-size: 1.5rem; margin-bottom: 2rem; border-bottom: 2px solid #1a1a1a;
+                      padding-bottom: 0.5rem; display: inline-block; }
+        .projects { display: flex; flex-wrap: wrap; gap: 2rem; }
+        .project-card { flex: 1 1 300px; background: #fff; border-radius: 8px;
+                        box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+        /* ISSUE: project card image fixed width — same 400px problem at mobile */
+        .project-card img { width: 400px; max-width: 100%; height: 220px;
+                            object-fit: cover; display: block; }
+        .project-info { padding: 1.25rem; }
+        .project-info h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .project-info p { font-size: 0.85rem; color: #666; line-height: 1.5; }
+        .tag { display: inline-block; background: #f0f0f0; border-radius: 3px;
+               padding: 2px 8px; font-size: 0.75rem; margin-top: 8px; margin-right: 4px; }
+
+        /* About — flexible */
+        .about { background: #1a1a1a; color: #f0f0f0; }
+        .about .section { display: flex; gap: 3rem; align-items: flex-start; }
+        .about h2 { color: #fff; border-color: #fff; }
+        .about p { color: #ccc; line-height: 1.8; }
+
+        footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #999;
+                 border-top: 1px solid #e0e0e0; }
+
+        @media (max-width: 768px) {
+            .hero { flex-direction: column; }
+            /* Notably missing: hero-image img width fix */
+            .about .section { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-inner">
+            <div class="logo">MARA SILVA</div>
+            <nav>
+                <a href="#">Work</a>
+                <a href="#">About</a>
+                <a href="#">Process</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <div class="hero-text">
+            <h1>Product Designer &amp;<br>Creative Director</h1>
+            <p>I design digital products and brand identities that connect with people. Based in
+               Lisbon, working with clients worldwide for over a decade.</p>
+            <a href="#" class="hero-cta">View Selected Work</a>
+        </div>
+        <div class="hero-image">
+            <img src="portrait.jpg" alt="Mara Silva">
+        </div>
+    </div>
+
+    <section class="section">
+        <h2>Selected Projects</h2>
+        <div class="projects">
+            <div class="project-card">
+                <img src="project1.jpg" alt="Fintech App Redesign">
+                <div class="project-info">
+                    <h3>Fintech App Redesign</h3>
+                    <p>Redesigned the onboarding and dashboard for a 2M-user banking app,
+                       reducing drop-off by 34%.</p>
+                    <span class="tag">UX Design</span>
+                    <span class="tag">Figma</span>
+                </div>
+            </div>
+            <div class="project-card">
+                <img src="project2.jpg" alt="Brand Identity">
+                <div class="project-info">
+                    <h3>Natura Brand Identity</h3>
+                    <p>Full visual identity system for a sustainable cosmetics startup,
+                       from logo to packaging guidelines.</p>
+                    <span class="tag">Branding</span>
+                    <span class="tag">Illustration</span>
+                </div>
+            </div>
+            <div class="project-card">
+                <img src="project3.jpg" alt="E-learning Platform">
+                <div class="project-info">
+                    <h3>EduPath Platform</h3>
+                    <p>End-to-end design of an adaptive learning platform serving
+                       students in 12 countries.</p>
+                    <span class="tag">Product Design</span>
+                    <span class="tag">Research</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="about">
+        <div class="section">
+            <div>
+                <h2>About</h2>
+                <p>With 11 years of experience across startups and agencies, I specialize
+                   in translating complex problems into elegant, human-centered solutions.
+                   Previously at IDEO, Farfetch, and Unilever.</p>
+            </div>
+            <div>
+                <h2>Awards</h2>
+                <p>Awwwards SOTD &times; 4, Webby Honoree 2024, IF Design Award 2023,
+                   Communication Arts Interactive Annual.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Mara Silva. All images copyright their respective owners.
+    </footer>
+</body>
+</html>

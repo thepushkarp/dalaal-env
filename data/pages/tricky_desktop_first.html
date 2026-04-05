@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Horizon SaaS — Project Management</title>
+    <style>
+        /*
+         * DESKTOP-FIRST approach: base styles ARE the desktop layout.
+         * No explicit min-width media query for desktop.
+         * Mobile/tablet overrides use max-width queries only.
+         * Should be evaluated as responsive (zero or one issue).
+         */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 1rem;
+               line-height: 1.6; color: #1e293b; background: #f8fafc; }
+
+        /* === NAV — flexible by default === */
+        header { background: #0f172a; color: #fff; }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
+                         display: flex; justify-content: space-between; align-items: center;
+                         height: 64px; }
+        .brand { font-size: 1.25rem; font-weight: 700; color: #7c3aed; letter-spacing: -0.02em; }
+        .nav-links { display: flex; gap: 0.25rem; list-style: none; }
+        .nav-links a { color: #94a3b8; text-decoration: none; padding: 0.5rem 0.875rem;
+                       border-radius: 6px; font-size: 0.9rem; }
+        .nav-links a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .nav-cta { background: #7c3aed; color: #fff; padding: 0.5rem 1.25rem;
+                   border-radius: 6px; font-size: 0.875rem; text-decoration: none;
+                   font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+
+        /* === HERO — flex, no fixed widths === */
+        .hero { max-width: 1200px; margin: 5rem auto 4rem; padding: 0 1.5rem;
+                display: flex; align-items: center; gap: 4rem; }
+        .hero-text { flex: 1; }
+        .hero-text h1 { font-size: 3rem; line-height: 1.1; font-weight: 800;
+                        letter-spacing: -0.04em; color: #0f172a; margin-bottom: 1.25rem; }
+        .hero-text p { font-size: 1.125rem; color: #475569; max-width: 500px; margin-bottom: 2rem; }
+        .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn-primary { background: #7c3aed; color: #fff; padding: 0.875rem 1.75rem;
+                       border-radius: 8px; text-decoration: none; font-weight: 600;
+                       font-size: 0.95rem; min-height: 44px; display: inline-flex; align-items: center; }
+        .btn-secondary { background: #fff; color: #0f172a; padding: 0.875rem 1.75rem;
+                         border-radius: 8px; text-decoration: none; font-weight: 600;
+                         font-size: 0.95rem; border: 1px solid #e2e8f0; min-height: 44px;
+                         display: inline-flex; align-items: center; }
+        .hero-graphic { flex: 0 0 auto; background: linear-gradient(135deg, #7c3aed, #2563eb);
+                        width: 420px; height: 320px; border-radius: 16px;
+                        display: flex; align-items: center; justify-content: center;
+                        color: #fff; font-size: 4rem; }
+
+        /* === FEATURES — responsive grid === */
+        .features { background: #fff; padding: 5rem 0; }
+        .features-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        .features-container h2 { text-align: center; font-size: 2rem; font-weight: 800;
+                                  margin-bottom: 3rem; color: #0f172a; }
+        .features-grid { display: grid;
+                         grid-template-columns: repeat(3, 1fr);
+                         gap: 2rem; }
+        .feature-card { background: #f8fafc; border-radius: 12px; padding: 1.75rem;
+                        border: 1px solid #e2e8f0; }
+        .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .feature-card p { font-size: 0.9rem; color: #64748b; line-height: 1.6; }
+
+        /* === PRICING — 3-column by default === */
+        .pricing { max-width: 1200px; margin: 5rem auto; padding: 0 1.5rem; }
+        .pricing h2 { text-align: center; font-size: 2rem; font-weight: 800;
+                      margin-bottom: 3rem; color: #0f172a; }
+        .pricing-cards { display: flex; gap: 1.5rem; }
+        .pricing-card { flex: 1; background: #fff; border-radius: 12px; padding: 2rem;
+                        border: 1px solid #e2e8f0; }
+        .pricing-card.featured { border-color: #7c3aed; box-shadow: 0 0 0 2px #7c3aed; }
+        .plan-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+                     color: #7c3aed; font-weight: 700; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; color: #0f172a; }
+        .plan-price span { font-size: 1rem; font-weight: 400; color: #64748b; }
+        .plan-features { list-style: none; margin-top: 1rem; }
+        .plan-features li { padding: 0.4rem 0; font-size: 0.9rem; color: #475569;
+                            border-bottom: 1px solid #f1f5f9; }
+        .plan-features li::before { content: "✓ "; color: #16a34a; font-weight: 700; }
+
+        /* === RESPONSIVE OVERRIDES (mobile/tablet only) === */
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-cards { flex-direction: column; }
+        }
+
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .hero { flex-direction: column; gap: 2rem; }
+            .hero-graphic { width: 100%; height: 200px; }
+            .hero-text h1 { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+
+        footer { background: #0f172a; color: #64748b; text-align: center;
+                 padding: 2rem; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <div class="brand">Horizon</div>
+            <ul class="nav-links">
+                <li><a href="#">Product</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">Docs</a></li>
+                <li><a href="#">Blog</a></li>
+            </ul>
+            <a href="#" class="nav-cta">Start Free Trial</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-text">
+            <h1>Ship projects faster, together.</h1>
+            <p>Horizon brings your team's tasks, timelines, and communication into one
+               calm, focused workspace. No chaos. No missed deadlines.</p>
+            <div class="hero-actions">
+                <a href="#" class="btn-primary">Get Started Free</a>
+                <a href="#" class="btn-secondary">Watch Demo</a>
+            </div>
+        </div>
+        <div class="hero-graphic">&#128640;</div>
+    </section>
+
+    <section class="features">
+        <div class="features-container">
+            <h2>Everything your team needs</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#128203;</div>
+                    <h3>Smart Task Boards</h3>
+                    <p>Kanban, list, or timeline view. Horizon adapts to how your team
+                       actually works, not the other way around.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128200;</div>
+                    <h3>Real-Time Analytics</h3>
+                    <p>Velocity charts, burndown graphs, and workload views update live
+                       as your team logs progress.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128101;</div>
+                    <h3>Team Collaboration</h3>
+                    <p>Threaded comments, @mentions, file attachments, and automatic
+                       status updates keep everyone aligned.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing">
+        <h2>Simple, honest pricing</h2>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <div class="plan-name">Starter</div>
+                <div class="plan-price">$0 <span>/mo</span></div>
+                <ul class="plan-features">
+                    <li>Up to 5 users</li>
+                    <li>3 projects</li>
+                    <li>1 GB storage</li>
+                    <li>Community support</li>
+                </ul>
+            </div>
+            <div class="pricing-card featured">
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">$24 <span>/mo</span></div>
+                <ul class="plan-features">
+                    <li>Unlimited users</li>
+                    <li>Unlimited projects</li>
+                    <li>50 GB storage</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+            <div class="pricing-card">
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-price">Custom</div>
+                <ul class="plan-features">
+                    <li>SSO &amp; SAML</li>
+                    <li>Audit logs</li>
+                    <li>Dedicated CSM</li>
+                    <li>SLA guarantee</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        &copy; 2026 Horizon Inc. All rights reserved.
+    </footer>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lumina — Photo Gallery</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --clr-bg: #0d0d0d;
+            --clr-surface: #1a1a1a;
+            --clr-border: rgba(255,255,255,0.1);
+            --clr-text: #f0f0f0;
+            --clr-muted: #888;
+            --clr-accent: #f4a835;
+            --radius: 0.625rem;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: var(--clr-bg);
+            color: var(--clr-text);
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(13,13,13,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--clr-border);
+            padding: 0 1.5rem;
+            height: 4rem;
+            display: flex; align-items: center; gap: 1.5rem;
+        }
+        .logo { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.03em; color: var(--clr-accent); flex-shrink: 0; }
+        .header-filters {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; flex: 1;
+        }
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--clr-border);
+            color: var(--clr-muted);
+            padding: 0.35rem 0.875rem;
+            border-radius: 99px;
+            font-size: 0.8rem; font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--clr-accent);
+            border-color: var(--clr-accent);
+            color: #000;
+        }
+        .header-actions { margin-left: auto; display: flex; gap: 0.75rem; flex-shrink: 0; }
+        .icon-btn {
+            background: transparent; border: 1px solid var(--clr-border);
+            color: var(--clr-muted); border-radius: 0.5rem;
+            width: 2.75rem; height: 2.75rem; min-height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.1rem;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .icon-btn:hover { border-color: var(--clr-accent); color: var(--clr-accent); }
+
+        /* ── Hero section ── */
+        .hero {
+            text-align: center;
+            padding: 4rem 1.5rem 3rem;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw + 1rem, 4.5rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            background: linear-gradient(135deg, #fff 30%, var(--clr-accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p { color: var(--clr-muted); font-size: clamp(0.9rem, 1.5vw, 1.1rem); margin-top: 0.75rem; }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 3rem;
+            margin-top: 2.5rem; flex-wrap: wrap;
+        }
+        .stat strong { display: block; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: var(--clr-accent); }
+        .stat span { font-size: 0.8rem; color: var(--clr-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+        /* ── Gallery grid ── */
+        .gallery-section { padding: 1rem 1.5rem 5rem; }
+        .section-label {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--clr-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Auto-fit grid — the star of this page */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+            gap: 1rem;
+        }
+
+        /* Masonry-ish highlight: some items span */
+        .gallery-item {
+            position: relative;
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            background: var(--clr-surface);
+        }
+        .gallery-item::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .gallery-item:hover::after { opacity: 1; }
+        .gallery-item:hover .item-overlay { opacity: 1; transform: translateY(0); }
+
+        .gallery-img {
+            width: 100%; height: 100%; min-height: 12rem;
+            object-fit: cover; max-width: 100%; display: block;
+            transition: transform 0.35s ease;
+        }
+        .gallery-item:hover .gallery-img { transform: scale(1.04); }
+
+        /* Placeholder gradient images */
+        .gallery-img.g1  { background: linear-gradient(135deg, #1a1a40, #7c5cfc, #f4a835); }
+        .gallery-img.g2  { background: linear-gradient(160deg, #0f2027, #203a43, #2c5364); }
+        .gallery-img.g3  { background: linear-gradient(135deg, #870000, #190a05); }
+        .gallery-img.g4  { background: linear-gradient(135deg, #0a3d62, #60a3bc); }
+        .gallery-img.g5  { background: linear-gradient(135deg, #485563, #29323c); }
+        .gallery-img.g6  { background: linear-gradient(160deg, #093028, #237a57); }
+        .gallery-img.g7  { background: linear-gradient(135deg, #4b134f, #c94b4b); }
+        .gallery-img.g8  { background: linear-gradient(135deg, #283048, #859398); }
+        .gallery-img.g9  { background: linear-gradient(135deg, #373b44, #4286f4); }
+        .gallery-img.g10 { background: linear-gradient(160deg, #2c3e50, #fd746c); }
+        .gallery-img.g11 { background: linear-gradient(135deg, #0d0d0d, #e94560, #f4a835); }
+        .gallery-img.g12 { background: linear-gradient(135deg, #1a3a1a, #76b852, #8DC26F); }
+
+        /* Tall cards */
+        .gallery-item.tall .gallery-img { min-height: 22rem; }
+
+        /* Overlay info */
+        .item-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            z-index: 10;
+            padding: 1rem 1.1rem;
+            color: #fff;
+            opacity: 0; transform: translateY(0.5rem);
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .item-title { font-size: 0.9rem; font-weight: 700; }
+        .item-meta  { font-size: 0.75rem; opacity: 0.7; margin-top: 0.2rem; }
+        .item-tags  { display: flex; gap: 0.35rem; margin-top: 0.6rem; flex-wrap: wrap; }
+        .item-tag {
+            font-size: 0.65rem; font-weight: 600;
+            padding: 0.15rem 0.5rem; border-radius: 99px;
+            background: rgba(244,168,53,0.8); color: #000;
+        }
+
+        /* Wide featured item */
+        .gallery-item.wide { grid-column: span 2; }
+        .gallery-item.wide .gallery-img { min-height: 18rem; }
+
+        /* ── Lightbox overlay (CSS-only demo) ── */
+        .lightbox-hint {
+            text-align: center; color: var(--clr-muted);
+            font-size: 0.8rem; margin-top: 2rem;
+        }
+
+        /* ── Load more ── */
+        .load-more {
+            display: flex; justify-content: center; margin-top: 3rem;
+        }
+        .btn-load {
+            padding: 0.85rem 2.5rem;
+            background: transparent;
+            border: 1.5px solid var(--clr-border);
+            color: var(--clr-text);
+            border-radius: 0.5rem;
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; min-height: 48px;
+            transition: all 0.15s;
+        }
+        .btn-load:hover { border-color: var(--clr-accent); color: var(--clr-accent); }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--clr-surface);
+            border-top: 1px solid var(--clr-border);
+            padding: 2rem 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem;
+            font-size: 0.8rem; color: var(--clr-muted);
+        }
+        footer a { color: var(--clr-accent); text-decoration: none; }
+
+        /* ── Media Queries ── */
+        @media (max-width: 480px) {
+            header { gap: 0.75rem; padding: 0 1rem; flex-wrap: wrap; height: auto; padding: 0.75rem 1rem; }
+            .header-filters { order: 3; width: 100%; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+            .gallery-item.wide { grid-column: span 1; }
+            .gallery-item.tall .gallery-img { min-height: 14rem; }
+            .hero { padding: 2.5rem 1rem 2rem; }
+            .hero-stats { gap: 1.5rem; }
+        }
+
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+            }
+            .gallery-item.wide { grid-column: span 2; }
+        }
+
+        @media (min-width: 1025px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .gallery-item.wide { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Lumina</div>
+    <div class="header-filters">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Landscape</button>
+        <button class="filter-btn">Portrait</button>
+        <button class="filter-btn">Abstract</button>
+        <button class="filter-btn">Urban</button>
+    </div>
+    <div class="header-actions">
+        <button class="icon-btn" aria-label="Grid view">⊞</button>
+        <button class="icon-btn" aria-label="Upload">↑</button>
+    </div>
+</header>
+
+<main>
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Visual Stories</h1>
+        <p>A curated collection of photography spanning landscape, portrait, and abstract genres.</p>
+        <div class="hero-stats">
+            <div class="stat"><strong>2,400+</strong><span>Photos</span></div>
+            <div class="stat"><strong>180</strong><span>Artists</span></div>
+            <div class="stat"><strong>52</strong><span>Collections</span></div>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="gallery-section">
+        <div class="section-label">Featured collection — Golden Hour</div>
+
+        <div class="gallery-grid" role="list">
+
+            <div class="gallery-item wide" role="listitem" tabindex="0" aria-label="Open Desert Dunes">
+                <div class="gallery-img g1"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Desert Dunes at Dusk</div>
+                    <div class="item-meta">Sahara · ISO 200 · f/8 · 1/200s</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span><span class="item-tag">Featured</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item tall" role="listitem" tabindex="0" aria-label="Open Arctic Silence">
+                <div class="gallery-img g2"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Arctic Silence</div>
+                    <div class="item-meta">Svalbard · ISO 400</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Ember Fields">
+                <div class="gallery-img g3"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Ember Fields</div>
+                    <div class="item-meta">Tuscany · f/5.6</div>
+                    <div class="item-tags"><span class="item-tag">Abstract</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Tidal Layers">
+                <div class="gallery-img g4"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Tidal Layers</div>
+                    <div class="item-meta">Iceland · Long exposure</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Urban Grid">
+                <div class="gallery-img g5"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Urban Grid</div>
+                    <div class="item-meta">Tokyo · ISO 1600</div>
+                    <div class="item-tags"><span class="item-tag">Urban</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item tall" role="listitem" tabindex="0" aria-label="Open Forest Cathedral">
+                <div class="gallery-img g6"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Forest Cathedral</div>
+                    <div class="item-meta">Olympic NP · f/11</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item wide" role="listitem" tabindex="0" aria-label="Open Violet Horizon">
+                <div class="gallery-img g7"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Violet Horizon</div>
+                    <div class="item-meta">Namib · Astrophotography</div>
+                    <div class="item-tags"><span class="item-tag">Abstract</span><span class="item-tag">Night</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Mist Valley">
+                <div class="gallery-img g8"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Mist Valley</div>
+                    <div class="item-meta">Dolomites · Dawn</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Cobalt Rush">
+                <div class="gallery-img g9"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Cobalt Rush</div>
+                    <div class="item-meta">Abstract · Studio</div>
+                    <div class="item-tags"><span class="item-tag">Abstract</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Copper Fade">
+                <div class="gallery-img g10"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Copper Fade</div>
+                    <div class="item-meta">Marrakech · Sunset</div>
+                    <div class="item-tags"><span class="item-tag">Urban</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Neon Rain">
+                <div class="gallery-img g11"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Neon Rain</div>
+                    <div class="item-meta">Seoul · Night</div>
+                    <div class="item-tags"><span class="item-tag">Urban</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-item" role="listitem" tabindex="0" aria-label="Open Verdant Canopy">
+                <div class="gallery-img g12"></div>
+                <div class="item-overlay">
+                    <div class="item-title">Verdant Canopy</div>
+                    <div class="item-meta">Costa Rica · f/4</div>
+                    <div class="item-tags"><span class="item-tag">Landscape</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="lightbox-hint">Click any photo to open fullscreen view</p>
+
+        <div class="load-more">
+            <button class="btn-load">Load more photos</button>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <span>© 2024 Lumina Photography. All images copyright their respective artists.</span>
+    <span><a href="#">Submit your work</a> · <a href="#">Licensing</a> · <a href="#">About</a></span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Market Data Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; font-size: 1rem; color: #1e1e2e; background: #f4f6fb; }
+
+        header { background: #1e1e2e; color: #fff; padding: 1rem 1.5rem;
+                 display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        .badge { background: #4f46e5; color: #fff; padding: 0.25rem 0.75rem;
+                 border-radius: 999px; font-size: 0.75rem; }
+
+        /* Page layout — responsive flexbox */
+        .layout { display: flex; gap: 1.5rem; max-width: 1100px; margin: 1.5rem auto;
+                  padding: 0 1rem; flex-wrap: wrap; }
+        .sidebar-panel { width: 220px; flex-shrink: 0; }
+        .main-panel { flex: 1; min-width: 0; }
+
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+                padding: 1.25rem; margin-bottom: 1.25rem; }
+        .card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem;
+                   text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+
+        .stat { display: flex; justify-content: space-between; padding: 0.5rem 0;
+                border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+        .stat:last-child { border-bottom: none; }
+        .stat .val { font-weight: 700; color: #4f46e5; }
+        .val.up { color: #16a34a; }
+        .val.down { color: #dc2626; }
+
+        /* ISSUE: table has fixed width — causes horizontal scroll on mobile, no overflow handling */
+        table { width: 700px; border-collapse: collapse; font-size: 0.875rem; }
+        th { background: #f4f6fb; text-align: left; padding: 0.65rem 1rem;
+             font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em;
+             color: #666; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 0.65rem 1rem; border-bottom: 1px solid #f0f0f0; color: #333; }
+        tr:hover td { background: #f8f9ff; }
+        .pill { display: inline-block; padding: 2px 10px; border-radius: 999px;
+                font-size: 0.75rem; font-weight: 600; }
+        .pill.buy  { background: #dcfce7; color: #166534; }
+        .pill.sell { background: #fee2e2; color: #991b1b; }
+        .pill.hold { background: #fef9c3; color: #854d0e; }
+
+        /* ISSUE: No overflow:auto or overflow-x:scroll on the table container */
+        .table-wrap { }
+
+        footer { text-align: center; color: #999; font-size: 0.8rem; padding: 1.5rem;
+                 border-top: 1px solid #e0e0e0; margin-top: 1rem; }
+
+        @media (max-width: 768px) {
+            .layout { flex-direction: column; }
+            .sidebar-panel { width: 100%; }
+            /* Table is NOT fixed here — still 700px */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Market Data Dashboard</h1>
+        <span class="badge">LIVE</span>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar-panel">
+            <div class="card">
+                <h2>Indices</h2>
+                <div class="stat"><span>S&amp;P 500</span><span class="val up">+1.24%</span></div>
+                <div class="stat"><span>NASDAQ</span><span class="val up">+1.87%</span></div>
+                <div class="stat"><span>DOW</span><span class="val down">-0.31%</span></div>
+                <div class="stat"><span>FTSE 100</span><span class="val up">+0.54%</span></div>
+                <div class="stat"><span>DAX</span><span class="val down">-0.18%</span></div>
+            </div>
+            <div class="card">
+                <h2>Commodities</h2>
+                <div class="stat"><span>Gold</span><span class="val up">$2,418</span></div>
+                <div class="stat"><span>Oil (WTI)</span><span class="val down">$77.32</span></div>
+                <div class="stat"><span>Natural Gas</span><span class="val up">$2.84</span></div>
+            </div>
+        </aside>
+
+        <main class="main-panel">
+            <div class="card">
+                <h2>Top Holdings — Q1 2026</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Company</th>
+                                <th>Price</th>
+                                <th>Change</th>
+                                <th>Market Cap</th>
+                                <th>P/E Ratio</th>
+                                <th>Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>AAPL</strong></td>
+                                <td>Apple Inc.</td>
+                                <td>$218.44</td>
+                                <td style="color:#16a34a">+2.1%</td>
+                                <td>$3.36T</td>
+                                <td>28.4</td>
+                                <td><span class="pill buy">BUY</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>MSFT</strong></td>
+                                <td>Microsoft Corp.</td>
+                                <td>$412.88</td>
+                                <td style="color:#16a34a">+1.4%</td>
+                                <td>$3.07T</td>
+                                <td>34.2</td>
+                                <td><span class="pill buy">BUY</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>NVDA</strong></td>
+                                <td>NVIDIA Corp.</td>
+                                <td>$876.50</td>
+                                <td style="color:#dc2626">-0.8%</td>
+                                <td>$2.15T</td>
+                                <td>62.1</td>
+                                <td><span class="pill hold">HOLD</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>AMZN</strong></td>
+                                <td>Amazon.com Inc.</td>
+                                <td>$195.22</td>
+                                <td style="color:#16a34a">+0.9%</td>
+                                <td>$2.04T</td>
+                                <td>41.8</td>
+                                <td><span class="pill buy">BUY</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>TSLA</strong></td>
+                                <td>Tesla Inc.</td>
+                                <td>$172.10</td>
+                                <td style="color:#dc2626">-3.2%</td>
+                                <td>$550B</td>
+                                <td>48.3</td>
+                                <td><span class="pill sell">SELL</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>&copy; 2026 MarketDash Inc. Data delayed 15 minutes. Not financial advice.</footer>
+</body>
+</html>

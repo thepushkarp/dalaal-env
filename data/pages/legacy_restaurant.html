@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- NO viewport meta tag — classic legacy issue -->
+    <title>La Bella Cucina Restaurant</title>
+    <style>
+        /* ISSUE: No viewport meta, table-based layout, all fixed px, no media queries */
+        body { margin: 0; padding: 0; font-family: Times New Roman, serif; font-size: 14px;
+               background: #f5efe0; color: #2c1a00; }
+        /* ISSUE: fixed 800px layout — clips on mobile */
+        #wrapper { width: 800px; margin: 0 auto; background: #fff; }
+        #header { background: #8b1a1a; padding: 20px; text-align: center; }
+        #header h1 { color: #f5d88a; font-size: 36px; margin: 0; font-style: italic; }
+        #header p  { color: #e8c87a; font-size: 13px; margin: 5px 0 0; letter-spacing: 2px; }
+        #nav { background: #5a1010; text-align: center; padding: 0; }
+        #nav a { display: inline-block; color: #f5d88a; text-decoration: none;
+                 padding: 10px 20px; font-size: 13px; font-family: Arial, sans-serif; }
+        #nav a:hover { background: #8b1a1a; }
+        /* ISSUE: table-based layout for content */
+        #content-table { width: 800px; }
+        #content-table td { vertical-align: top; }
+        #main-content { padding: 20px; width: 560px; }
+        #right-sidebar { padding: 15px; width: 240px; background: #fdf5e0;
+                         border-left: 2px solid #d4a017; }
+        .section-title { font-size: 22px; color: #8b1a1a; border-bottom: 2px solid #d4a017;
+                         padding-bottom: 6px; margin-bottom: 14px; }
+        .menu-item { margin-bottom: 14px; }
+        .menu-item h3 { font-size: 16px; color: #5a1010; margin: 0 0 3px; }
+        .menu-item .price { color: #8b1a1a; font-weight: bold; font-size: 14px; float: right; }
+        .menu-item p { font-size: 13px; color: #555; margin: 0; clear: both; }
+        .divider { border: none; border-top: 1px dashed #d4a017; margin: 12px 0; }
+        /* ISSUE: fixed image sizes — no max-width, no responsive */
+        #hero-img { width: 560px; height: 200px; object-fit: cover; display: block; }
+        .sidebar-img { width: 210px; height: 140px; object-fit: cover; display: block; margin-bottom: 10px; }
+        #right-sidebar h4 { font-size: 14px; color: #8b1a1a; margin-bottom: 8px; font-family: Arial, sans-serif; }
+        #right-sidebar p { font-size: 12px; line-height: 1.6; }
+        #right-sidebar ul { font-size: 12px; padding-left: 16px; line-height: 1.8; }
+        #hours-box { background: #8b1a1a; color: #f5d88a; padding: 10px; margin-top: 14px;
+                     font-size: 12px; font-family: Arial, sans-serif; }
+        #hours-box p { margin: 3px 0; }
+        #footer { background: #2c1a00; color: #c8a04a; text-align: center;
+                  padding: 12px; font-size: 12px; font-family: Arial, sans-serif; }
+        /* ISSUE: no media queries at all */
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="header">
+            <h1>La Bella Cucina</h1>
+            <p>AUTHENTIC ITALIAN CUISINE EST. 1987</p>
+        </div>
+        <div id="nav">
+            <a href="#">Home</a>
+            <a href="#">Menu</a>
+            <a href="#">Reservations</a>
+            <a href="#">Events</a>
+            <a href="#">Find Us</a>
+        </div>
+
+        <img id="hero-img" src="restaurant-hero.jpg" alt="Interior of La Bella Cucina">
+
+        <table id="content-table" cellpadding="0" cellspacing="0">
+            <tr>
+                <td id="main-content">
+                    <div class="section-title">Tonight's Specials</div>
+
+                    <div class="menu-item">
+                        <h3>Linguine alle Vongole <span class="price">$28</span></h3>
+                        <p>Fresh clams, white wine, garlic, chili, and flat-leaf parsley
+                           over house-made linguine.</p>
+                    </div>
+                    <hr class="divider">
+                    <div class="menu-item">
+                        <h3>Osso Buco alla Milanese <span class="price">$36</span></h3>
+                        <p>Slow-braised veal shank with gremolata, served with
+                           saffron risotto.</p>
+                    </div>
+                    <hr class="divider">
+                    <div class="menu-item">
+                        <h3>Branzino al Forno <span class="price">$32</span></h3>
+                        <p>Whole roasted sea bass with lemon, capers, and Sicilian
+                           olive oil.</p>
+                    </div>
+                    <hr class="divider">
+                    <div class="menu-item">
+                        <h3>Tiramisù della Casa <span class="price">$9</span></h3>
+                        <p>Our signature recipe, unchanged since 1987. Made fresh daily.</p>
+                    </div>
+
+                    <div class="section-title" style="margin-top: 20px;">About Us</div>
+                    <p style="font-size: 13px; line-height: 1.7;">
+                        La Bella Cucina has served the community for over 35 years. Founded by
+                        the Moretti family, we bring recipes passed down through four generations
+                        to your table every evening. All pastas are made in-house daily.
+                    </p>
+                </td>
+                <td id="right-sidebar">
+                    <img class="sidebar-img" src="chef.jpg" alt="Our Chef">
+                    <h4>Reservations</h4>
+                    <p>Call us: <strong>(555) 012-3456</strong></p>
+                    <p style="margin-top: 6px;">Online booking available for parties of 6 or more.</p>
+                    <div id="hours-box">
+                        <p><strong>Opening Hours</strong></p>
+                        <p>Mon–Thu: 12pm – 10pm</p>
+                        <p>Fri–Sat: 12pm – 11pm</p>
+                        <p>Sunday: 1pm – 9pm</p>
+                    </div>
+                    <h4 style="margin-top: 14px;">Address</h4>
+                    <p>47 Via Roma, Suite 2<br>New York, NY 10001</p>
+                    <h4 style="margin-top: 10px;">Awards</h4>
+                    <ul>
+                        <li>Michelin Bib Gourmand 2024</li>
+                        <li>Zagat Top 30 Italian NYC</li>
+                        <li>Wine Spectator Award</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+
+        <div id="footer">
+            &copy; 2026 La Bella Cucina. All rights reserved. | Privacy Policy
+        </div>
+    </div>
+</body>
+</html>

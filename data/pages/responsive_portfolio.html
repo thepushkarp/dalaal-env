@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Alex Rivera — Creative Portfolio</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --clr-bg: #0e0e14;
+            --clr-surface: #18181f;
+            --clr-accent: #7c5cfc;
+            --clr-accent-light: #a98bfd;
+            --clr-text: #e8e8f0;
+            --clr-muted: #9090a8;
+            --radius: 0.75rem;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: var(--clr-bg);
+            color: var(--clr-text);
+            overflow-x: hidden;
+        }
+
+        /* ── Typography ── */
+        h1 { font-size: clamp(2rem, 5vw + 1rem, 4rem); font-weight: 800; line-height: 1.1; }
+        h2 { font-size: clamp(1.5rem, 3vw + 0.5rem, 2.5rem); font-weight: 700; }
+        h3 { font-size: clamp(1rem, 2vw + 0.25rem, 1.4rem); font-weight: 600; }
+        p  { font-size: clamp(0.9rem, 1.5vw + 0.25rem, 1.05rem); }
+
+        /* ── Layout helpers ── */
+        .container { max-width: 70rem; margin: 0 auto; padding: 0 1.25rem; }
+
+        /* ── Header / Nav ── */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(14, 14, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 1rem 0;
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logo { font-size: 1.2rem; font-weight: 800; color: var(--clr-accent-light); letter-spacing: -0.02em; }
+        nav { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+        nav a {
+            color: var(--clr-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            min-height: 44px;
+            display: flex; align-items: center;
+            transition: color 0.2s, background 0.2s;
+        }
+        nav a:hover { color: var(--clr-text); background: rgba(255,255,255,0.06); }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 6rem 0 5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+            max-width: 48rem;
+        }
+        .hero .tag {
+            font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--clr-accent-light);
+            background: rgba(124,92,252,0.12);
+            padding: 0.35rem 0.85rem; border-radius: 99px;
+        }
+        .hero p { color: var(--clr-muted); max-width: 36rem; }
+        .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.75rem 1.75rem; border-radius: 0.5rem;
+            font-size: 0.95rem; font-weight: 600; text-decoration: none;
+            min-height: 44px; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+        }
+        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-primary { background: var(--clr-accent); color: #fff; }
+        .btn-ghost {
+            background: transparent; color: var(--clr-text);
+            border: 1.5px solid rgba(255,255,255,0.18);
+        }
+
+        /* ── Section ── */
+        section { padding: 5rem 0; }
+        .section-label {
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--clr-accent);
+            margin-bottom: 0.75rem;
+        }
+        .section-title { margin-bottom: 3rem; }
+        .section-title p { color: var(--clr-muted); margin-top: 0.75rem; max-width: 36rem; }
+
+        /* ── Grid Gallery ── */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background: var(--clr-surface);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+        .card-image {
+            width: 100%; aspect-ratio: 16 / 10;
+            object-fit: cover; max-width: 100%; display: block;
+            background: linear-gradient(135deg, #1e1e2e, #2a1f4f);
+        }
+        .card-image.p1 { background: linear-gradient(135deg, #1a1a40, #7c5cfc55); }
+        .card-image.p2 { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+        .card-image.p3 { background: linear-gradient(135deg, #16213e, #0f3460, #533483); }
+        .card-image.p4 { background: linear-gradient(135deg, #0a3d62, #1289a7, #c0392b22); }
+        .card-image.p5 { background: linear-gradient(135deg, #1a1a2e, #e94560, #7c5cfc55); }
+        .card-image.p6 { background: linear-gradient(135deg, #0d0d0d, #434343, #7c5cfc44); }
+        .card-body { padding: 1.25rem; }
+        .card-meta { font-size: 0.75rem; color: var(--clr-accent-light); font-weight: 600; margin-bottom: 0.35rem; }
+        .card-body h3 { margin-bottom: 0.5rem; }
+        .card-body p { font-size: 0.875rem; color: var(--clr-muted); }
+        .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+        .tag-pill {
+            font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem;
+            background: rgba(124,92,252,0.15); color: var(--clr-accent-light);
+            border-radius: 99px;
+        }
+
+        /* ── Featured card (spans 2 cols) ── */
+        .card-featured { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; }
+        .card-featured .card-image { height: 100%; min-height: 14rem; border-radius: 0; }
+
+        /* ── Skills ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+            gap: 1rem;
+        }
+        .skill-item {
+            background: var(--clr-surface);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .skill-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .skill-item p { font-size: 0.85rem; color: var(--clr-muted); }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--clr-surface);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 2.5rem 0;
+            text-align: center;
+            color: var(--clr-muted);
+            font-size: 0.875rem;
+        }
+        footer a { color: var(--clr-accent-light); text-decoration: none; }
+
+        /* ── Media Queries ── */
+        @media (max-width: 480px) {
+            .hero { padding: 4rem 0 3rem; }
+            nav a { padding: 0.5rem 0.5rem; font-size: 0.8rem; }
+            .gallery { grid-template-columns: 1fr; }
+            .card-featured { grid-column: span 1; grid-template-columns: 1fr; }
+            .card-featured .card-image { min-height: 10rem; }
+            .skills-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .gallery { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+            .card-featured { grid-column: span 2; }
+        }
+
+        @media (max-width: 700px) {
+            .card-featured { grid-column: span 1; grid-template-columns: 1fr; }
+            .card-featured .card-image { height: 10rem; }
+        }
+
+        @media (min-width: 1025px) {
+            .gallery { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <span class="logo">alex.dev</span>
+        <nav>
+            <a href="#work">Work</a>
+            <a href="#skills">Skills</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="hero">
+            <span class="tag">Available for projects</span>
+            <h1>Crafting digital experiences that matter</h1>
+            <p>I'm Alex Rivera — a product designer and front-end developer building clean, accessible interfaces for startups and scale-ups.</p>
+            <div class="hero-cta">
+                <a href="#work" class="btn btn-primary">View my work</a>
+                <a href="#contact" class="btn btn-ghost">Get in touch</a>
+            </div>
+        </div>
+
+        <!-- Work / Gallery -->
+        <section id="work">
+            <div class="section-label">Selected work</div>
+            <div class="section-title">
+                <h2>Projects I'm proud of</h2>
+                <p>A curated selection of product design, web development, and open-source contributions.</p>
+            </div>
+
+            <div class="gallery">
+                <div class="card card-featured">
+                    <div class="card-image p1" role="img" aria-label="Orbital Dashboard preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Case Study · 2024</div>
+                        <h3>Orbital Dashboard</h3>
+                        <p>An analytics platform for SaaS companies. Redesigned the core data visualization layer, cutting time-to-insight by 40%.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">Figma</span>
+                            <span class="tag-pill">React</span>
+                            <span class="tag-pill">D3.js</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image p2" role="img" aria-label="Tide App preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Mobile · 2024</div>
+                        <h3>Tide Finance App</h3>
+                        <p>Personal budgeting app with a calm, minimal design language.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">iOS</span>
+                            <span class="tag-pill">Swift UI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image p3" role="img" aria-label="Beacon Design System preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Design System · 2023</div>
+                        <h3>Beacon Design System</h3>
+                        <p>Component library used across 6 products at a Series B startup.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">Storybook</span>
+                            <span class="tag-pill">CSS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image p4" role="img" aria-label="Harbour CMS preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Web · 2023</div>
+                        <h3>Harbour CMS</h3>
+                        <p>Headless CMS with drag-and-drop page builder for editorial teams.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">Next.js</span>
+                            <span class="tag-pill">Prisma</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image p5" role="img" aria-label="Glow Brand Identity preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Branding · 2022</div>
+                        <h3>Glow Brand Identity</h3>
+                        <p>Full brand identity for a DTC skincare brand — logo, palette, type.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">Illustrator</span>
+                            <span class="tag-pill">Motion</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-image p6" role="img" aria-label="Pulse API Docs preview"></div>
+                    <div class="card-body">
+                        <div class="card-meta">Open Source · 2022</div>
+                        <h3>Pulse API Docs</h3>
+                        <p>Interactive API documentation template used by 2k+ developers.</p>
+                        <div class="card-tags">
+                            <span class="tag-pill">TypeScript</span>
+                            <span class="tag-pill">MDX</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section id="skills">
+            <div class="section-label">Expertise</div>
+            <div class="section-title">
+                <h2>Tools &amp; technologies</h2>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-item"><div class="skill-icon">🎨</div><h3>UI Design</h3><p>Figma, Sketch</p></div>
+                <div class="skill-item"><div class="skill-icon">⚛️</div><h3>React</h3><p>Next.js, Vite</p></div>
+                <div class="skill-item"><div class="skill-icon">✏️</div><h3>CSS</h3><p>Grid, Flexbox, animations</p></div>
+                <div class="skill-item"><div class="skill-icon">🔷</div><h3>TypeScript</h3><p>Strict mode, generics</p></div>
+                <div class="skill-item"><div class="skill-icon">📦</div><h3>Node.js</h3><p>APIs, tooling</p></div>
+                <div class="skill-item"><div class="skill-icon">🌐</div><h3>Accessibility</h3><p>WCAG 2.2 AA</p></div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>Built with care &amp; no frameworks — <a href="mailto:alex@example.dev">alex@example.dev</a></p>
+        <p style="margin-top:0.5rem">&copy; 2024 Alex Rivera. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

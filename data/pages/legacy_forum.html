@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- NO viewport meta tag -->
+    <title>TechTalk Forums - Hardware &amp; Overclocking</title>
+    <style>
+        /* ISSUE: No viewport meta, 950px fixed width, nested tables, px everything, no media queries */
+        body { margin: 0; padding: 0; background: #c8d8e8; font-family: Verdana, Arial, sans-serif;
+               font-size: 11px; color: #000; }
+        /* ISSUE: fixed 950px — doesn't scale on mobile */
+        #page { width: 950px; margin: 0 auto; }
+        #banner { background: #1c3a5e; border-bottom: 3px solid #ff9900; }
+        #banner table { width: 950px; }
+        #banner .logo-cell { padding: 10px 14px; }
+        #banner .logo-cell h1 { color: #ff9900; font-size: 20px; margin: 0;
+                                 font-family: Impact, sans-serif; letter-spacing: 2px; }
+        #banner .logo-cell p { color: #a0c0e0; font-size: 10px; margin: 2px 0 0; }
+        #banner .search-cell { padding: 10px 14px; text-align: right; vertical-align: middle; }
+        #banner .search-cell input[type=text] { width: 160px; padding: 3px; font-size: 11px; }
+        #banner .search-cell input[type=submit] { padding: 3px 8px; font-size: 11px; }
+        #navbar { background: #2b5278; padding: 0; border-bottom: 2px solid #ff9900; }
+        #navbar a { display: inline-block; color: #e0e8f0; text-decoration: none;
+                    padding: 6px 12px; font-size: 11px; font-weight: bold; }
+        #navbar a:hover { background: #3a6a99; color: #ff9900; }
+        /* ISSUE: fixed widths on layout columns */
+        #main-table { width: 950px; background: #fff; border: 1px solid #8899aa; }
+        #left-col { width: 140px; background: #e8f0f8; border-right: 1px solid #8899aa;
+                    vertical-align: top; padding: 8px; }
+        #center-col { vertical-align: top; padding: 8px; }
+        #right-col { width: 160px; background: #e8f0f8; border-left: 1px solid #8899aa;
+                     vertical-align: top; padding: 8px; }
+        .side-title { background: #2b5278; color: #fff; font-size: 10px; font-weight: bold;
+                      padding: 3px 6px; margin-bottom: 6px; text-transform: uppercase; }
+        .side-link { font-size: 10px; display: block; color: #1c3a5e; text-decoration: none;
+                     padding: 2px 0; border-bottom: 1px dotted #c0c0c0; }
+        /* ISSUE: tiny touch targets (height ~16px via line-height only) */
+        .side-link:hover { color: #ff6600; }
+        .forum-section { margin-bottom: 12px; }
+        .forum-section-header { background: #2b5278; color: #fff; padding: 4px 8px;
+                                font-size: 12px; font-weight: bold; }
+        /* ISSUE: nested inner table for thread list, fixed column widths */
+        .thread-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .thread-table th { background: #ddeeff; padding: 3px 6px; border: 1px solid #8899aa;
+                           font-size: 10px; text-align: left; }
+        .thread-table td { padding: 3px 6px; border: 1px solid #d0d8e0; vertical-align: top; }
+        .thread-table tr:nth-child(even) td { background: #f4f8fc; }
+        .col-icon { width: 20px; text-align: center; }
+        .col-subject { }
+        .col-author { width: 100px; text-align: center; }
+        .col-replies { width: 55px; text-align: center; }
+        .col-views { width: 55px; text-align: center; }
+        .col-last { width: 130px; }
+        .thread-link { color: #1c3a5e; text-decoration: none; font-weight: bold; }
+        .thread-link:hover { color: #ff6600; text-decoration: underline; }
+        .author-link { color: #336699; text-decoration: none; font-size: 10px; }
+        .hot { color: #cc0000; }
+        .sticky-icon { color: #336699; font-size: 12px; }
+        .right-widget { margin-bottom: 10px; }
+        .right-widget-title { background: #ff9900; color: #fff; padding: 3px 6px;
+                               font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .right-widget p { font-size: 10px; padding: 4px 0; border-bottom: 1px dotted #ccc;
+                          margin: 0; }
+        #footer-bar { background: #1c3a5e; color: #a0c0e0; font-size: 10px;
+                      padding: 6px 10px; text-align: center; border-top: 2px solid #ff9900; }
+        #footer-bar a { color: #ff9900; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div id="page">
+    <div id="banner">
+        <table cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="logo-cell">
+                    <h1>TECHTALK FORUMS</h1>
+                    <p>The Premier Community for Hardware Enthusiasts Since 2001</p>
+                </td>
+                <td class="search-cell">
+                    <input type="text" value="Search forums...">
+                    <input type="submit" value="Go">
+                    &nbsp; <a href="#" style="color:#ff9900;font-size:11px;">Register</a>
+                    &nbsp; <a href="#" style="color:#a0c0e0;font-size:11px;">Login</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="navbar">
+        <a href="#">Forum Home</a>
+        <a href="#">CPU &amp; Mobo</a>
+        <a href="#">GPU Corner</a>
+        <a href="#">Overclocking</a>
+        <a href="#">Cooling</a>
+        <a href="#">Storage</a>
+        <a href="#">Networking</a>
+        <a href="#">Buy/Sell</a>
+        <a href="#">Off-Topic</a>
+    </div>
+
+    <table id="main-table" cellpadding="0" cellspacing="0">
+        <tr>
+            <td id="left-col">
+                <div class="side-title">Navigation</div>
+                <a class="side-link" href="#">Forum Home</a>
+                <a class="side-link" href="#">New Posts</a>
+                <a class="side-link" href="#">Hot Threads</a>
+                <a class="side-link" href="#">My Profile</a>
+                <a class="side-link" href="#">Subscriptions</a>
+                <a class="side-link" href="#">Members List</a>
+                <div class="side-title" style="margin-top:10px;">Categories</div>
+                <a class="side-link" href="#">Announcements</a>
+                <a class="side-link" href="#">General Chat</a>
+                <a class="side-link" href="#">Builds Showcase</a>
+                <a class="side-link" href="#">Benchmarks DB</a>
+                <a class="side-link" href="#">Drivers &amp; BIOS</a>
+                <a class="side-link" href="#">Troubleshooting</a>
+            </td>
+            <td id="center-col">
+                <div class="forum-section">
+                    <div class="forum-section-header">
+                        Overclocking &amp; Tweaking
+                    </div>
+                    <table class="thread-table" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="col-icon"></th>
+                                <th class="col-subject">Subject</th>
+                                <th class="col-author">Author</th>
+                                <th class="col-replies">Replies</th>
+                                <th class="col-views">Views</th>
+                                <th class="col-last">Last Post</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-icon"><span class="sticky-icon">&#128204;</span></td>
+                                <td><a class="thread-link" href="#">[STICKY] Overclocking Safety Guide — READ FIRST</a><br>
+                                    <span style="font-size:10px;color:#666;">Rules &amp; best practices for beginners</span></td>
+                                <td class="col-author"><a class="author-link" href="#">Admin_Rex</a></td>
+                                <td class="col-replies">0</td>
+                                <td class="col-views">48,221</td>
+                                <td class="col-last">2024-01-15<br><span style="font-size:10px;">Admin_Rex</span></td>
+                            </tr>
+                            <tr>
+                                <td class="col-icon"><span class="hot">&#128293;</span></td>
+                                <td><a class="thread-link" href="#">5nm Ryzen hitting 5.4 GHz on air — is this normal?</a></td>
+                                <td class="col-author"><a class="author-link" href="#">overclock_king</a></td>
+                                <td class="col-replies">183</td>
+                                <td class="col-views">12,440</td>
+                                <td class="col-last">Today 14:32<br><span style="font-size:10px;">turbofan99</span></td>
+                            </tr>
+                            <tr>
+                                <td class="col-icon"></td>
+                                <td><a class="thread-link" href="#">DDR5-8000 stability on Z890 — what voltage?</a></td>
+                                <td class="col-author"><a class="author-link" href="#">ramguru</a></td>
+                                <td class="col-replies">47</td>
+                                <td class="col-views">3,812</td>
+                                <td class="col-last">Today 11:05<br><span style="font-size:10px;">silicon_wizard</span></td>
+                            </tr>
+                            <tr>
+                                <td class="col-icon"></td>
+                                <td><a class="thread-link" href="#">Thermal paste comparison 2026 — 15 products tested</a></td>
+                                <td class="col-author"><a class="author-link" href="#">frosty_bench</a></td>
+                                <td class="col-replies">92</td>
+                                <td class="col-views">7,560</td>
+                                <td class="col-last">Yesterday<br><span style="font-size:10px;">kryonaut_fan</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="forum-section" style="margin-top:14px;">
+                    <div class="forum-section-header">GPU Corner</div>
+                    <table class="thread-table" cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th class="col-icon"></th>
+                                <th class="col-subject">Subject</th>
+                                <th class="col-author">Author</th>
+                                <th class="col-replies">Replies</th>
+                                <th class="col-views">Views</th>
+                                <th class="col-last">Last Post</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-icon"><span class="hot">&#128293;</span></td>
+                                <td><a class="thread-link" href="#">RTX 6090 Ti power draw — 600W TDP confirmed?</a></td>
+                                <td class="col-author"><a class="author-link" href="#">watt_watcher</a></td>
+                                <td class="col-replies">341</td>
+                                <td class="col-views">28,900</td>
+                                <td class="col-last">Today 15:44<br><span style="font-size:10px;">morepowah</span></td>
+                            </tr>
+                            <tr>
+                                <td class="col-icon"></td>
+                                <td><a class="thread-link" href="#">Best GPU for 4K gaming under $800 in 2026</a></td>
+                                <td class="col-author"><a class="author-link" href="#">pixel_pusher</a></td>
+                                <td class="col-replies">128</td>
+                                <td class="col-views">9,101</td>
+                                <td class="col-last">Today 09:12<br><span style="font-size:10px;">framemaster</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+            <td id="right-col">
+                <div class="right-widget">
+                    <div class="right-widget-title">Forum Stats</div>
+                    <p>Threads: 142,880</p>
+                    <p>Posts: 3,412,050</p>
+                    <p>Members: 218,440</p>
+                    <p>Newest: gpu_nerd_42</p>
+                </div>
+                <div class="right-widget">
+                    <div class="right-widget-title">Online Now</div>
+                    <p>18 members, 234 guests</p>
+                    <p>overclock_king, ramguru,<br>frosty_bench, watt_watcher</p>
+                </div>
+                <div class="right-widget">
+                    <div class="right-widget-title">Sponsors</div>
+                    <p><a href="#" style="color:#336699;">CoolerMaster</a></p>
+                    <p><a href="#" style="color:#336699;">NZXT</a></p>
+                    <p><a href="#" style="color:#336699;">Corsair</a></p>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div id="footer-bar">
+        TechTalk Forums &copy; 2001&ndash;2026 | <a href="#">Rules</a> | <a href="#">Privacy</a> |
+        <a href="#">Contact</a> | Powered by ForumEngine 4.2
+    </div>
+</div>
+</body>
+</html>

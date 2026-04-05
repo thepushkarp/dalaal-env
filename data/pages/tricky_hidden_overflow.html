@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apex Analytics — Dashboard</title>
+    <style>
+        /*
+         * TRICKY: Page looks clean because .page-wrapper has overflow:hidden.
+         * But .dashboard-inner has a fixed 1200px width that gets clipped on mobile,
+         * not scrolled — content is silently hidden rather than causing a scrollbar.
+         * Issues: horizontal_scroll (clipped), fixed_width_elements
+         */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; font-size: 1rem; color: #1e293b;
+               background: #0f172a; }
+
+        /* Header — full-width, looks fine */
+        header { background: #1e293b; border-bottom: 1px solid #334155;
+                 padding: 0 2rem; height: 56px;
+                 display: flex; align-items: center; justify-content: space-between; }
+        header .logo { color: #818cf8; font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
+        header nav a { color: #94a3b8; text-decoration: none; margin-left: 1.25rem;
+                       font-size: 0.875rem; }
+        header nav a:hover { color: #fff; }
+        .user-badge { background: #4338ca; color: #fff; padding: 0.25rem 0.75rem;
+                      border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+
+        /* TRICK: overflow:hidden on wrapper makes the 1200px child "fit" visually */
+        .page-wrapper { overflow: hidden; padding: 2rem 0; }
+
+        /* ISSUE: fixed 1200px inner container — overflows on viewports < 1200px,
+           but is clipped by parent rather than scrolling */
+        .dashboard-inner { width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* KPI row */
+        .kpi-row { display: flex; gap: 1.25rem; margin-bottom: 2rem; }
+        .kpi-card { flex: 1; background: #1e293b; border-radius: 12px; padding: 1.5rem;
+                    border: 1px solid #334155; }
+        .kpi-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase;
+                     letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+        .kpi-value { font-size: 2rem; font-weight: 800; color: #f1f5f9; }
+        .kpi-delta { font-size: 0.8rem; margin-top: 0.4rem; }
+        .kpi-delta.up { color: #4ade80; }
+        .kpi-delta.down { color: #f87171; }
+
+        /* Main content area */
+        .content-grid { display: flex; gap: 1.5rem; }
+        .chart-area { flex: 1; background: #1e293b; border-radius: 12px; padding: 1.5rem;
+                      border: 1px solid #334155; }
+        .chart-area h2 { font-size: 1rem; color: #f1f5f9; font-weight: 600;
+                         margin-bottom: 1.25rem; }
+        .chart-placeholder { height: 240px; background: linear-gradient(180deg, #4338ca22, #4338ca44);
+                             border-radius: 8px; display: flex; align-items: flex-end;
+                             padding: 0 1rem 1rem; gap: 8px; }
+        .bar { background: #6366f1; border-radius: 4px 4px 0 0; flex: 1; }
+        .sidebar-panel { width: 300px; flex-shrink: 0; }
+        .panel-card { background: #1e293b; border-radius: 12px; padding: 1.25rem;
+                      border: 1px solid #334155; margin-bottom: 1.25rem; }
+        .panel-card h3 { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase;
+                         letter-spacing: 0.06em; margin-bottom: 1rem; }
+        .event-item { display: flex; gap: 0.75rem; align-items: flex-start;
+                      padding: 0.6rem 0; border-bottom: 1px solid #334155; }
+        .event-item:last-child { border-bottom: none; }
+        .event-dot { width: 8px; height: 8px; border-radius: 50%; background: #6366f1;
+                     margin-top: 0.35rem; flex-shrink: 0; }
+        .event-text { font-size: 0.85rem; color: #cbd5e1; }
+        .event-time { font-size: 0.75rem; color: #64748b; }
+        .progress-item { margin-bottom: 0.875rem; }
+        .progress-label { display: flex; justify-content: space-between;
+                          font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.35rem; }
+        .progress-bar { height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #6366f1; border-radius: 3px; }
+
+        /* Footer — full width */
+        footer { text-align: center; color: #475569; font-size: 0.8rem; padding: 1.5rem;
+                 border-top: 1px solid #334155; }
+
+        /* Some media queries exist — but they don't fix the 1200px inner width */
+        @media (max-width: 768px) {
+            header nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Apex Analytics</div>
+        <nav>
+            <a href="#">Overview</a>
+            <a href="#">Reports</a>
+            <a href="#">Segments</a>
+            <a href="#">Settings</a>
+        </nav>
+        <span class="user-badge">Pro Plan</span>
+    </header>
+
+    <div class="page-wrapper">
+        <div class="dashboard-inner">
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Monthly Revenue</div>
+                    <div class="kpi-value">$142,800</div>
+                    <div class="kpi-delta up">&#8593; +12.4% vs last month</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Active Users</div>
+                    <div class="kpi-value">28,441</div>
+                    <div class="kpi-delta up">&#8593; +8.1%</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Churn Rate</div>
+                    <div class="kpi-value">2.3%</div>
+                    <div class="kpi-delta down">&#8595; +0.4% vs target</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Avg. Session</div>
+                    <div class="kpi-value">4m 18s</div>
+                    <div class="kpi-delta up">&#8593; +22s</div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="chart-area">
+                    <h2>Revenue — Last 12 Months</h2>
+                    <div class="chart-placeholder">
+                        <div class="bar" style="height:55%"></div>
+                        <div class="bar" style="height:62%"></div>
+                        <div class="bar" style="height:48%"></div>
+                        <div class="bar" style="height:70%"></div>
+                        <div class="bar" style="height:65%"></div>
+                        <div class="bar" style="height:80%"></div>
+                        <div class="bar" style="height:74%"></div>
+                        <div class="bar" style="height:90%"></div>
+                        <div class="bar" style="height:85%"></div>
+                        <div class="bar" style="height:95%"></div>
+                        <div class="bar" style="height:88%"></div>
+                        <div class="bar" style="height:100%"></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-panel">
+                    <div class="panel-card">
+                        <h3>Recent Events</h3>
+                        <div class="event-item">
+                            <div class="event-dot"></div>
+                            <div>
+                                <div class="event-text">New enterprise signup — Acme Corp</div>
+                                <div class="event-time">2 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-dot" style="background:#4ade80"></div>
+                            <div>
+                                <div class="event-text">Payment processed — $4,800/yr</div>
+                                <div class="event-time">4 hours ago</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-dot" style="background:#f87171"></div>
+                            <div>
+                                <div class="event-text">Subscription cancelled — TechFlow Ltd</div>
+                                <div class="event-time">Yesterday</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-card">
+                        <h3>Goal Progress</h3>
+                        <div class="progress-item">
+                            <div class="progress-label"><span>MRR Target</span><span>71%</span></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:71%"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label"><span>New Signups</span><span>88%</span></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label"><span>NPS Score</span><span>54%</span></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:54%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>&copy; 2026 Apex Analytics. Data updated every 5 minutes.</footer>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact Us — Helix Studio</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --clr-bg: #f7f8fa;
+            --clr-surface: #ffffff;
+            --clr-accent: #2563eb;
+            --clr-accent-dark: #1d4ed8;
+            --clr-text: #1e293b;
+            --clr-muted: #64748b;
+            --clr-border: #e2e8f0;
+            --clr-error: #dc2626;
+            --clr-success: #16a34a;
+            --radius: 0.625rem;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            background: var(--clr-bg);
+            color: var(--clr-text);
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: var(--clr-surface);
+            border-bottom: 1px solid var(--clr-border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 1.25rem; font-weight: 800; color: var(--clr-accent); }
+        nav { display: flex; gap: 0.5rem; }
+        nav a {
+            color: var(--clr-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: var(--radius);
+            min-height: 44px;
+            display: flex; align-items: center;
+            transition: background 0.15s, color 0.15s;
+        }
+        nav a:hover { background: var(--clr-bg); color: var(--clr-text); }
+
+        /* ── Page layout: two-column flex ── */
+        .page-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            min-height: calc(100vh - 65px);
+        }
+
+        /* Left panel — info */
+        .info-panel {
+            flex: 0 0 42%;
+            background: linear-gradient(160deg, #1e40af, #2563eb 50%, #3b82f6);
+            color: #fff;
+            padding: 4rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .info-panel h1 { font-size: clamp(1.75rem, 3vw + 0.5rem, 2.75rem); font-weight: 800; line-height: 1.15; }
+        .info-panel p  { font-size: clamp(0.9rem, 1.5vw, 1rem); opacity: 0.85; max-width: 28rem; }
+
+        .contact-details { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem; }
+        .contact-item { display: flex; align-items: flex-start; gap: 0.875rem; }
+        .contact-icon {
+            flex-shrink: 0;
+            width: 2.5rem; height: 2.5rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+        .contact-item-text strong { display: block; font-size: 0.8rem; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; }
+        .contact-item-text span { font-size: 0.95rem; }
+
+        /* Right panel — form */
+        .form-panel {
+            flex: 1;
+            padding: 4rem 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .form-card {
+            background: var(--clr-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 34rem;
+        }
+        .form-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .form-card .subtitle { color: var(--clr-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+        /* ── Form fields ── */
+        .form-row { display: flex; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; flex: 1; }
+        label { font-size: 0.875rem; font-weight: 600; color: var(--clr-text); }
+        label .required { color: var(--clr-error); margin-left: 0.15rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.7rem 0.875rem;
+            border: 1.5px solid var(--clr-border);
+            border-radius: var(--radius);
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--clr-text);
+            background: var(--clr-surface);
+            transition: border-color 0.15s, box-shadow 0.15s;
+            min-height: 44px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--clr-accent);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        textarea { resize: vertical; min-height: 8rem; }
+
+        /* Budget select */
+        select { cursor: pointer; }
+
+        /* Checkbox */
+        .checkbox-group { flex-direction: row; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .checkbox-group input[type="checkbox"] {
+            width: 1.1rem; height: 1.1rem; min-height: unset;
+            margin-top: 0.15rem; flex-shrink: 0; accent-color: var(--clr-accent);
+        }
+        .checkbox-group label { font-size: 0.85rem; color: var(--clr-muted); font-weight: 400; }
+        .checkbox-group label a { color: var(--clr-accent); text-decoration: underline; }
+
+        /* Submit button */
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem 1.5rem;
+            background: var(--clr-accent);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            min-height: 48px;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-submit:hover { background: var(--clr-accent-dark); transform: translateY(-1px); }
+        .btn-submit:active { transform: translateY(0); }
+
+        /* Success banner */
+        .success-banner {
+            display: flex; align-items: center; gap: 0.75rem;
+            background: #f0fdf4; border: 1.5px solid #86efac;
+            border-radius: var(--radius); padding: 1rem 1.25rem;
+            font-size: 0.9rem; color: var(--clr-success);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--clr-text);
+            color: #94a3b8;
+            text-align: center;
+            padding: 1.5rem 1.25rem;
+            font-size: 0.8rem;
+        }
+
+        /* ── Media Queries ── */
+        @media (max-width: 480px) {
+            header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+            .page-wrapper { flex-direction: column; }
+            .info-panel { padding: 2.5rem 1.5rem; flex: none; }
+            .form-panel { padding: 2rem 1.25rem; }
+            .form-card { padding: 1.75rem 1.25rem; }
+            .form-row { flex-direction: column; gap: 0; }
+            nav { flex-wrap: wrap; }
+        }
+
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .page-wrapper { flex-direction: column; }
+            .info-panel { flex: none; padding: 3rem 2.5rem; flex-direction: row; flex-wrap: wrap; gap: 2rem; }
+            .info-panel h1 { flex: 0 0 100%; }
+            .form-panel { padding: 2.5rem; }
+            .form-card { max-width: 100%; }
+        }
+
+        @media (min-width: 1025px) {
+            .info-panel { flex: 0 0 40%; }
+            .form-panel { padding: 4rem 4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <span class="logo">Helix Studio</span>
+    <nav>
+        <a href="#">Work</a>
+        <a href="#">Services</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+</header>
+
+<div class="page-wrapper">
+
+    <!-- Info panel -->
+    <div class="info-panel">
+        <div>
+            <h1>Let's build something great together</h1>
+            <p>Whether you have a detailed brief or just a spark of an idea, we'd love to hear from you.</p>
+        </div>
+
+        <div class="contact-details">
+            <div class="contact-item">
+                <div class="contact-icon">📍</div>
+                <div class="contact-item-text">
+                    <strong>Address</strong>
+                    <span>42 Maple Street, San Francisco, CA 94107</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-item-text">
+                    <strong>Email</strong>
+                    <span>hello@helixstudio.io</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div class="contact-item-text">
+                    <strong>Phone</strong>
+                    <span>+1 (415) 555-0182</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon">🕐</div>
+                <div class="contact-item-text">
+                    <strong>Office Hours</strong>
+                    <span>Mon – Fri, 9 am – 6 pm PST</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form panel -->
+    <div class="form-panel">
+        <div class="form-card">
+            <h2>Send us a message</h2>
+            <p class="subtitle">We typically reply within one business day.</p>
+
+            <div class="success-banner" role="status" aria-live="polite" style="display:none">
+                ✅ Your message was sent! We'll be in touch shortly.
+            </div>
+
+            <form action="#" method="post" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fname">First name <span class="required">*</span></label>
+                        <input type="text" id="fname" name="fname" autocomplete="given-name" placeholder="Alex" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lname">Last name <span class="required">*</span></label>
+                        <input type="text" id="lname" name="lname" autocomplete="family-name" placeholder="Rivera" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" autocomplete="email" placeholder="alex@company.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Company / Organisation</label>
+                    <input type="text" id="company" name="company" autocomplete="organization" placeholder="Acme Inc.">
+                </div>
+
+                <div class="form-group">
+                    <label for="budget">Estimated budget</label>
+                    <select id="budget" name="budget">
+                        <option value="">Select a range…</option>
+                        <option value="5k">Under $5,000</option>
+                        <option value="10k">$5,000 – $10,000</option>
+                        <option value="25k">$10,000 – $25,000</option>
+                        <option value="50k">$25,000 – $50,000</option>
+                        <option value="50k+">$50,000+</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message <span class="required">*</span></label>
+                    <textarea id="message" name="message" placeholder="Tell us about your project, timeline, and any specific requirements…" required></textarea>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="consent" name="consent" required>
+                    <label for="consent">I agree to the <a href="#">Privacy Policy</a> and consent to Helix Studio storing my data to respond to my inquiry.</label>
+                </div>
+
+                <button type="submit" class="btn-submit">Send message →</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>&copy; 2024 Helix Studio. Crafting digital products with purpose.</p>
+</footer>
+
+</body>
+</html>

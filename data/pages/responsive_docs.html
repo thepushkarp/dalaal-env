@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prism UI — Documentation</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --clr-bg: #ffffff;
+            --clr-sidebar-bg: #f8fafc;
+            --clr-border: #e2e8f0;
+            --clr-accent: #7c3aed;
+            --clr-accent-light: #ede9fe;
+            --clr-text: #1e293b;
+            --clr-muted: #64748b;
+            --clr-code-bg: #f1f5f9;
+            --clr-code-border: #e2e8f0;
+            --sidebar-w: 16rem;
+            --header-h: 3.75rem;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--clr-text);
+            background: var(--clr-bg);
+        }
+
+        /* ── Top header ── */
+        .site-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+            height: var(--header-h);
+            background: var(--clr-bg);
+            border-bottom: 1px solid var(--clr-border);
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0 1.5rem;
+        }
+        .logo { font-size: 1.1rem; font-weight: 800; color: var(--clr-accent); white-space: nowrap; }
+        .header-search {
+            flex: 1; max-width: 22rem;
+            display: flex; align-items: center;
+            background: var(--clr-sidebar-bg); border: 1.5px solid var(--clr-border);
+            border-radius: 0.5rem; padding: 0 0.75rem; gap: 0.5rem;
+        }
+        .header-search input {
+            border: none; background: transparent; outline: none; width: 100%;
+            font-size: 0.875rem; color: var(--clr-text); padding: 0.6rem 0;
+        }
+        .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+        .badge {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em;
+            background: var(--clr-accent-light); color: var(--clr-accent);
+            padding: 0.2rem 0.5rem; border-radius: 99px;
+        }
+        .github-link {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.875rem; color: var(--clr-muted); text-decoration: none;
+            padding: 0.45rem 0.75rem; border: 1.5px solid var(--clr-border);
+            border-radius: 0.5rem; min-height: 44px;
+            transition: border-color 0.15s;
+        }
+        .github-link:hover { border-color: var(--clr-accent); color: var(--clr-accent); }
+
+        /* ── Hamburger toggle (mobile only) ── */
+        .menu-toggle {
+            display: none;
+            background: none; border: none; cursor: pointer;
+            padding: 0.5rem; color: var(--clr-text);
+            font-size: 1.4rem; line-height: 1;
+            min-height: 44px; min-width: 44px;
+            border-radius: 0.375rem;
+            transition: background 0.15s;
+        }
+        .menu-toggle:hover { background: var(--clr-sidebar-bg); }
+
+        /* ── Main layout ── */
+        .docs-layout {
+            display: flex;
+            min-height: 100vh;
+            padding-top: var(--header-h);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed;
+            top: var(--header-h); left: 0; bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--clr-sidebar-bg);
+            border-right: 1px solid var(--clr-border);
+            overflow-y: auto;
+            padding: 1.5rem 0;
+            transition: transform 0.25s ease;
+            z-index: 100;
+        }
+        .sidebar-section { margin-bottom: 1.75rem; }
+        .sidebar-heading {
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--clr-muted);
+            padding: 0 1.25rem; margin-bottom: 0.5rem;
+        }
+        .sidebar-link {
+            display: block;
+            padding: 0.45rem 1.25rem;
+            font-size: 0.875rem;
+            color: var(--clr-muted);
+            text-decoration: none;
+            border-left: 2px solid transparent;
+            transition: color 0.15s, border-color 0.15s, background 0.15s;
+            min-height: 36px; line-height: 36px; white-space: nowrap;
+        }
+        .sidebar-link:hover { color: var(--clr-text); background: var(--clr-border); }
+        .sidebar-link.active {
+            color: var(--clr-accent); border-left-color: var(--clr-accent);
+            background: var(--clr-accent-light); font-weight: 600;
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 90;
+            background: rgba(0,0,0,0.4);
+        }
+
+        /* ── Main content ── */
+        .docs-content {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            padding: 3rem 2rem 5rem;
+            max-width: 52rem;
+        }
+        .docs-content h1 { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 800; margin-bottom: 0.5rem; }
+        .docs-content h2 {
+            font-size: clamp(1.25rem, 2vw, 1.625rem);
+            font-weight: 700; margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--clr-border);
+        }
+        .docs-content h3 { font-size: 1.1rem; font-weight: 600; margin: 1.75rem 0 0.75rem; }
+        .docs-content p { margin-bottom: 1rem; color: var(--clr-text); font-size: 0.975rem; }
+        .docs-content a { color: var(--clr-accent); text-decoration: underline; }
+
+        /* Lead text */
+        .lead { font-size: clamp(1rem, 1.5vw, 1.125rem); color: var(--clr-muted); margin-bottom: 2rem; }
+
+        /* Code blocks */
+        pre {
+            background: var(--clr-code-bg);
+            border: 1px solid var(--clr-code-border);
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        code { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+        p code, li code {
+            background: var(--clr-code-bg);
+            border: 1px solid var(--clr-code-border);
+            padding: 0.1em 0.35em; border-radius: 0.25rem;
+            font-size: 0.85em;
+        }
+
+        /* Callout boxes */
+        .callout {
+            display: flex; gap: 1rem; align-items: flex-start;
+            padding: 1rem 1.25rem; border-radius: 0.5rem;
+            margin: 1.5rem 0; font-size: 0.9rem;
+        }
+        .callout-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.05rem; }
+        .callout.info { background: #eff6ff; border-left: 3px solid #3b82f6; }
+        .callout.warn { background: #fffbeb; border-left: 3px solid #f59e0b; }
+        .callout.tip  { background: #f0fdf4; border-left: 3px solid #22c55e; }
+
+        /* Props table */
+        .table-wrapper { overflow-x: auto; margin: 1.5rem 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        th, td { padding: 0.625rem 0.875rem; text-align: left; border-bottom: 1px solid var(--clr-border); }
+        th { background: var(--clr-sidebar-bg); font-weight: 700; color: var(--clr-text); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        tr:hover td { background: var(--clr-sidebar-bg); }
+
+        /* Prev / Next nav */
+        .doc-nav { display: flex; gap: 1rem; justify-content: space-between; margin-top: 4rem; flex-wrap: wrap; }
+        .doc-nav-btn {
+            flex: 1; min-width: 10rem; padding: 1rem 1.25rem;
+            border: 1.5px solid var(--clr-border); border-radius: 0.625rem;
+            text-decoration: none; color: var(--clr-text);
+            transition: border-color 0.15s; min-height: 60px;
+        }
+        .doc-nav-btn:hover { border-color: var(--clr-accent); }
+        .doc-nav-btn span { display: block; font-size: 0.75rem; color: var(--clr-muted); margin-bottom: 0.2rem; }
+        .doc-nav-btn strong { font-size: 0.9rem; }
+        .doc-nav-btn.next { text-align: right; }
+
+        /* ── Media Queries ── */
+        @media (max-width: 480px) {
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .sidebar { transform: translateX(-100%); width: min(80vw, 18rem); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .docs-content { margin-left: 0; padding: 2rem 1.25rem 4rem; }
+            .header-search { display: none; }
+            .github-link span { display: none; }
+            .doc-nav { flex-direction: column; }
+        }
+
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .docs-content { margin-left: 0; padding: 2.5rem 2rem 4rem; max-width: 100%; }
+        }
+
+        @media (min-width: 1025px) {
+            .docs-content { padding: 3rem 3rem 5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Header -->
+<header class="site-header">
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+    <a href="#" class="logo">Prism UI</a>
+    <span class="badge">v3.2.0</span>
+    <div class="header-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" placeholder="Search docs…" aria-label="Search documentation">
+    </div>
+    <div class="header-right">
+        <a href="#" class="github-link">⭐ <span>GitHub</span></a>
+    </div>
+</header>
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="docs-layout">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar" aria-label="Documentation navigation">
+        <div class="sidebar-section">
+            <div class="sidebar-heading">Getting Started</div>
+            <a href="#" class="sidebar-link active">Introduction</a>
+            <a href="#" class="sidebar-link">Installation</a>
+            <a href="#" class="sidebar-link">Quick Start</a>
+            <a href="#" class="sidebar-link">Theming</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-heading">Core Concepts</div>
+            <a href="#" class="sidebar-link">Design Tokens</a>
+            <a href="#" class="sidebar-link">Responsive System</a>
+            <a href="#" class="sidebar-link">Accessibility</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-heading">Components</div>
+            <a href="#" class="sidebar-link">Button</a>
+            <a href="#" class="sidebar-link">Input</a>
+            <a href="#" class="sidebar-link">Modal</a>
+            <a href="#" class="sidebar-link">Table</a>
+            <a href="#" class="sidebar-link">Dropdown</a>
+            <a href="#" class="sidebar-link">Toast</a>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-heading">Guides</div>
+            <a href="#" class="sidebar-link">Migrating from v2</a>
+            <a href="#" class="sidebar-link">Server Side Rendering</a>
+            <a href="#" class="sidebar-link">Dark Mode</a>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="docs-content">
+        <h1>Introduction to Prism UI</h1>
+        <p class="lead">Prism UI is an accessible, themeable component library for React. Build products faster without sacrificing quality or inclusivity.</p>
+
+        <div class="callout info">
+            <span class="callout-icon">💡</span>
+            <div>You're reading docs for <strong>v3.2.0</strong>. If you're on v2, see the <a href="#">migration guide</a>.</div>
+        </div>
+
+        <h2>Installation</h2>
+        <p>Install Prism UI using your preferred package manager:</p>
+        <pre><code>npm install @prism-ui/react
+# or
+pnpm add @prism-ui/react</code></pre>
+
+        <p>Then wrap your application with the <code>PrismProvider</code>:</p>
+        <pre><code>import { PrismProvider } from '@prism-ui/react';
+
+export default function App({ children }) {
+  return (
+    &lt;PrismProvider&gt;
+      {children}
+    &lt;/PrismProvider&gt;
+  );
+}</code></pre>
+
+        <div class="callout tip">
+            <span class="callout-icon">✅</span>
+            <div>Prism UI is tree-shakeable. Only the components you import are included in your bundle.</div>
+        </div>
+
+        <h2>Button component</h2>
+        <p>The <code>Button</code> component is the building block of all interactive elements. It supports five visual variants and three sizes.</p>
+
+        <h3>Props</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>variant</code></td><td><code>string</code></td><td><code>"primary"</code></td><td>Visual style: primary, secondary, ghost, danger, link</td></tr>
+                    <tr><td><code>size</code></td><td><code>string</code></td><td><code>"md"</code></td><td>sm | md | lg</td></tr>
+                    <tr><td><code>disabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Disables interaction and dims the button</td></tr>
+                    <tr><td><code>loading</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Shows a spinner and prevents double submission</td></tr>
+                    <tr><td><code>onClick</code></td><td><code>function</code></td><td>—</td><td>Click event handler</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="callout warn">
+            <span class="callout-icon">⚠️</span>
+            <div>Always pair <code>loading</code> with a disabled state to prevent multiple submissions on async actions.</div>
+        </div>
+
+        <h2>Responsive system</h2>
+        <p>Prism UI ships with five breakpoints based on a mobile-first scale. You can override any breakpoint in the theme provider.</p>
+
+        <pre><code>const theme = {
+  breakpoints: {
+    sm: '480px',   // Mobile portrait
+    md: '768px',   // Tablet
+    lg: '1024px',  // Small desktop
+    xl: '1280px',  // Desktop
+    '2xl': '1536px' // Wide screen
+  }
+};</code></pre>
+
+        <div class="doc-nav">
+            <a href="#" class="doc-nav-btn">
+                <span>← Previous</span>
+                <strong>Overview</strong>
+            </a>
+            <a href="#" class="doc-nav-btn next">
+                <span>Next →</span>
+                <strong>Installation</strong>
+            </a>
+        </div>
+    </main>
+</div>
+
+<script>
+    const toggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.textContent = '✕';
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = '☰';
+    }
+
+    toggle.addEventListener('click', () => {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    overlay.addEventListener('click', closeSidebar);
+</script>
+
+</body>
+</html>

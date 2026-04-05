@@ -21,6 +21,43 @@
       "issue_count": 10
     },
     {
+      "id": "legacy_forum",
+      "filename": "legacy_forum.html",
+      "title": "TechTalk Forums - Hardware & Overclocking",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "font_sizing",
+        "horizontal_scroll",
+        "media_queries",
+        "responsive_tables",
+        "text_readability",
+        "viewport_meta"
+      ],
+      "issue_count": 8
+    },
+    {
+      "id": "legacy_restaurant",
+      "filename": "legacy_restaurant.html",
+      "title": "La Bella Cucina Restaurant",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "font_sizing",
+        "horizontal_scroll",
+        "media_queries",
+        "responsive_images",
+        "responsive_tables",
+        "text_readability",
+        "viewport_meta"
+      ],
+      "issue_count": 9
+    },
+    {
       "id": "partial_dashboard",
       "filename": "partial_dashboard.html",
       "title": "Analytics Dashboard",
@@ -54,6 +91,48 @@
       "issue_count": 7
     },
     {
+      "id": "partial_news",
+      "filename": "partial_news.html",
+      "title": "The Daily Courier",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "flexible_layouts",
+        "font_sizing",
+        "media_queries",
+        "text_readability"
+      ],
+      "issue_count": 4
+    },
+    {
+      "id": "partial_portfolio",
+      "filename": "partial_portfolio.html",
+      "title": "Mara Silva \u2014 Portfolio",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "horizontal_scroll",
+        "media_queries"
+      ],
+      "issue_count": 3
+    },
+    {
+      "id": "partial_table_heavy",
+      "filename": "partial_table_heavy.html",
+      "title": "Market Data Dashboard",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "horizontal_scroll",
+        "media_queries",
+        "responsive_tables"
+      ],
+      "issue_count": 5
+    },
+    {
       "id": "responsive_blog",
       "filename": "responsive_blog.html",
       "title": "Modern Tech Blog",
@@ -61,6 +140,39 @@
       "difficulty": "medium",
       "ground_truth_issues": [
         "media_queries"
+      ],
+      "issue_count": 1
+    },
+    {
+      "id": "responsive_docs",
+      "filename": "responsive_docs.html",
+      "title": "Prism UI \u2014 Documentation",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "responsive_tables",
+        "text_readability",
+        "touch_targets"
+      ],
+      "issue_count": 3
+    },
+    {
+      "id": "responsive_form",
+      "filename": "responsive_form.html",
+      "title": "Contact Us \u2014 Helix Studio",
+      "tier": "fully_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [],
+      "issue_count": 0
+    },
+    {
+      "id": "responsive_gallery",
+      "filename": "responsive_gallery.html",
+      "title": "Lumina \u2014 Photo Gallery",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "text_readability"
       ],
       "issue_count": 1
     },
@@ -74,6 +186,67 @@
         "media_queries"
       ],
       "issue_count": 1
+    },
+    {
+      "id": "responsive_nav",
+      "filename": "responsive_nav.html",
+      "title": "Meridian \u2014 Responsive Navigation",
+      "tier": "fully_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [],
+      "issue_count": 0
+    },
+    {
+      "id": "responsive_portfolio",
+      "filename": "responsive_portfolio.html",
+      "title": "Alex Rivera \u2014 Creative Portfolio",
+      "tier": "fully_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [],
+      "issue_count": 0
+    },
+    {
+      "id": "tricky_desktop_first",
+      "filename": "tricky_desktop_first.html",
+      "title": "Horizon SaaS \u2014 Project Management",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "horizontal_scroll",
+        "media_queries"
+      ],
+      "issue_count": 3
+    },
+    {
+      "id": "tricky_hidden_overflow",
+      "filename": "tricky_hidden_overflow.html",
+      "title": "Apex Analytics \u2014 Dashboard",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "horizontal_scroll",
+        "media_queries"
+      ],
+      "issue_count": 4
+    },
+    {
+      "id": "tricky_inline_styles",
+      "filename": "tricky_inline_styles.html",
+      "title": "QuickBite \u2014 Food Delivery",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "horizontal_scroll",
+        "media_queries",
+        "responsive_images",
+        "text_readability"
+      ],
+      "issue_count": 6
     }
   ]
 }

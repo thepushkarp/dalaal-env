@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Daily Courier</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Georgia, serif; font-size: 14px; color: #222; background: #f0f0f0; }
+        header { background: #b00020; color: #fff; padding: 12px 20px; }
+        header h1 { font-size: 28px; letter-spacing: 2px; }
+        nav { background: #1a1a1a; }
+        nav a { display: inline-block; color: #ddd; text-decoration: none; padding: 8px 14px;
+                font-size: 13px; }
+        nav a:hover { background: #333; }
+        .page-wrap { display: flex; max-width: 1100px; margin: 20px auto; gap: 20px; padding: 0 10px; }
+        .main-col { flex: 1; }
+        /* ISSUE: sidebar has fixed width — won't shrink on mobile */
+        .sidebar { width: 250px; flex-shrink: 0; }
+        article.lead { background: #fff; padding: 20px; margin-bottom: 16px; border-radius: 4px; }
+        article.lead h2 { font-size: 22px; margin-bottom: 8px; color: #b00020; }
+        /* ISSUE: px font sizes throughout — no rem/em scaling */
+        article.lead p { font-size: 14px; line-height: 1.7; color: #444; }
+        .article-meta { font-size: 11px; color: #888; margin-bottom: 10px; }
+        .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .story { background: #fff; padding: 14px; border-radius: 4px; }
+        .story h3 { font-size: 15px; margin-bottom: 6px; }
+        .story p { font-size: 13px; color: #555; line-height: 1.5; }
+        .sidebar-box { background: #fff; padding: 14px; border-radius: 4px; margin-bottom: 16px; }
+        .sidebar-box h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+                          border-bottom: 2px solid #b00020; padding-bottom: 6px; margin-bottom: 10px; }
+        .sidebar-box ul { list-style: none; }
+        .sidebar-box ul li { padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .sidebar-box ul li a { text-decoration: none; color: #333; }
+        .weather { background: #1a6fc4; color: #fff; padding: 14px; border-radius: 4px; text-align: center; }
+        .weather .temp { font-size: 36px; font-weight: bold; }
+        .weather p { font-size: 12px; margin-top: 4px; }
+        footer { background: #1a1a1a; color: #888; text-align: center; padding: 16px;
+                 font-size: 12px; margin-top: 20px; }
+
+        /* Some media queries exist but don't fix the sidebar */
+        @media (max-width: 768px) {
+            .story-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>THE DAILY COURIER</h1>
+    </header>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">World</a>
+        <a href="#">Politics</a>
+        <a href="#">Business</a>
+        <a href="#">Sports</a>
+        <a href="#">Opinion</a>
+    </nav>
+
+    <div class="page-wrap">
+        <main class="main-col">
+            <article class="lead">
+                <p class="article-meta">WORLD NEWS &bull; April 5, 2026 &bull; 3 min read</p>
+                <h2>Global Climate Summit Reaches Historic Agreement on Emissions</h2>
+                <p>World leaders gathered in Geneva yesterday to sign a landmark accord committing
+                   to a 60% reduction in carbon emissions by 2040. The deal, brokered after three
+                   days of intense negotiations, includes binding targets for the first time and a
+                   $500 billion fund for developing nations.</p>
+                <p style="margin-top: 10px;">Critics argue the targets still fall short of what
+                   scientists say is necessary to limit warming to 1.5°C, while supporters call it
+                   the most ambitious international climate agreement in history.</p>
+            </article>
+
+            <div class="story-grid">
+                <div class="story">
+                    <h3>Tech Giants Face New Antitrust Rules in EU</h3>
+                    <p>Brussels unveiled sweeping regulations that would force major platforms
+                       to open their ecosystems to competitors starting next year.</p>
+                </div>
+                <div class="story">
+                    <h3>Markets Rally on Strong Employment Data</h3>
+                    <p>Global equities rose sharply after reports showed unemployment fell
+                       to a five-year low across the G7 nations last quarter.</p>
+                </div>
+                <div class="story">
+                    <h3>Scientists Confirm New Deep-Sea Species</h3>
+                    <p>A research vessel operating in the Pacific has documented over
+                       40 previously unknown species in a newly explored trench system.</p>
+                </div>
+                <div class="story">
+                    <h3>City Council Votes on Public Transit Expansion</h3>
+                    <p>The downtown metro line extension will add six new stations and
+                       is expected to reduce commute times by up to 30 minutes.</p>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="weather">
+                <div class="temp">17°C</div>
+                <p>Partly Cloudy — Geneva</p>
+            </div>
+            <div class="sidebar-box">
+                <h4>Most Read</h4>
+                <ul>
+                    <li><a href="#">Climate deal signed in Geneva</a></li>
+                    <li><a href="#">EU antitrust ruling explained</a></li>
+                    <li><a href="#">Markets hit record high</a></li>
+                    <li><a href="#">Election results live blog</a></li>
+                </ul>
+            </div>
+            <div class="sidebar-box">
+                <h4>Opinion</h4>
+                <ul>
+                    <li><a href="#">Why the climate deal isn't enough</a></li>
+                    <li><a href="#">The future of remote work</a></li>
+                    <li><a href="#">Rethinking urban planning</a></li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        &copy; 2026 The Daily Courier. All rights reserved.
+    </footer>
+</body>
+</html>
