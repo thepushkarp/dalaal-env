@@ -26,4 +26,4 @@ server = "dalaal_env.server.app:main"
 [tool.setuptools]
 include-package-data = true
 packages = ["dalaal_env", "dalaal_env.analyzer", "dalaal_env.server"]
-package-dir = { "dalaal_env" = "dalaal_env", "dalaal_env.analyzer" = "dalaal_env/analyzer", "dalaal_env.server" = "dalaal_env/server" }
+package-dir = { "dalaal_env" = ".", "dalaal_env.analyzer" = "analyzer", "dalaal_env.server" = "server" }

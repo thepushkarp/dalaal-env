@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Modern Tech Blog</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; font-size: 1rem; line-height: 1.6; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        header { background: #1a1a2e; color: #fff; padding: 1rem 0; }
+        header .container { display: flex; justify-content: space-between; align-items: center; }
+        nav a { color: #e0e0e0; text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+        .hero { background: #16213e; color: #fff; padding: 4rem 0; text-align: center; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; max-width: 40rem; margin: 0 auto; }
+        .posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: 2rem; padding: 3rem 0; }
+        .post-card { background: #fff; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .post-card img { max-width: 100%; height: auto; display: block; }
+        .post-card .content { padding: 1.5rem; }
+        .post-card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .post-card p { font-size: 0.9rem; color: #666; }
+        .sidebar { background: #f5f5f5; padding: 2rem; border-radius: 0.5rem; }
+        .main-content { display: grid; grid-template-columns: 1fr 20rem; gap: 2rem; padding: 2rem 0; }
+        footer { background: #1a1a2e; color: #ccc; padding: 2rem 0; text-align: center; font-size: 0.85rem; }
+        a.btn { display: inline-block; padding: 0.75rem 1.5rem; background: #0f3460; color: #fff; text-decoration: none; border-radius: 0.25rem; min-height: 44px; }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.5rem; }
+            .hero p { font-size: 1rem; }
+            header .container { flex-direction: column; gap: 0.5rem; }
+            nav a { margin-left: 0.75rem; font-size: 0.85rem; }
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .main-content { grid-template-columns: 1fr; }
+            .posts { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .main-content { grid-template-columns: 1fr 16rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo"><strong>TechBlog</strong></div>
+            <nav>
+                <a href="#">Home</a>
+                <a href="#">Articles</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Welcome to TechBlog</h1>
+            <p>Exploring the latest in technology, software development, and digital innovation.</p>
+            <br>
+            <a href="#" class="btn">Start Reading</a>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="main-content">
+            <section class="posts">
+                <article class="post-card">
+                    <img src="placeholder-1.jpg" alt="Article 1">
+                    <div class="content">
+                        <h2>Understanding Modern CSS Grid</h2>
+                        <p>A deep dive into CSS Grid layout and how it revolutionizes web design for responsive experiences.</p>
+                    </div>
+                </article>
+                <article class="post-card">
+                    <img src="placeholder-2.jpg" alt="Article 2">
+                    <div class="content">
+                        <h2>The Rise of WebAssembly</h2>
+                        <p>How WebAssembly is changing the landscape of web performance and what it means for developers.</p>
+                    </div>
+                </article>
+                <article class="post-card">
+                    <img src="placeholder-3.jpg" alt="Article 3">
+                    <div class="content">
+                        <h2>Building Accessible Web Apps</h2>
+                        <p>Best practices for creating web applications that work for everyone, regardless of ability.</p>
+                    </div>
+                </article>
+            </section>
+            <aside class="sidebar">
+                <h3>Popular Tags</h3>
+                <p>JavaScript, Python, Rust, WebAssembly, CSS, React, Performance, Accessibility</p>
+            </aside>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 TechBlog. Built with modern responsive CSS.</p>
+        </div>
+    </footer>
+</body>
+</html>

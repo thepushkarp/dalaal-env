@@ -1,0 +1,82 @@
+{
+  "pages": [
+    {
+      "id": "legacy_corporate",
+      "filename": "legacy_corporate.html",
+      "title": "Acme Corp - Enterprise Solutions",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "font_sizing",
+        "horizontal_scroll",
+        "media_queries",
+        "responsive_images",
+        "responsive_tables",
+        "text_readability",
+        "touch_targets",
+        "viewport_meta"
+      ],
+      "issue_count": 10
+    },
+    {
+      "id": "partial_dashboard",
+      "filename": "partial_dashboard.html",
+      "title": "Analytics Dashboard",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "font_sizing",
+        "horizontal_scroll",
+        "media_queries",
+        "text_readability",
+        "touch_targets"
+      ],
+      "issue_count": 7
+    },
+    {
+      "id": "partial_ecommerce",
+      "filename": "partial_ecommerce.html",
+      "title": "ShopNow - Online Store",
+      "tier": "non_responsive",
+      "difficulty": "easy",
+      "ground_truth_issues": [
+        "fixed_width_elements",
+        "flexible_layouts",
+        "font_sizing",
+        "media_queries",
+        "responsive_images",
+        "text_readability",
+        "touch_targets"
+      ],
+      "issue_count": 7
+    },
+    {
+      "id": "responsive_blog",
+      "filename": "responsive_blog.html",
+      "title": "Modern Tech Blog",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "media_queries",
+        "text_readability"
+      ],
+      "issue_count": 2
+    },
+    {
+      "id": "responsive_landing",
+      "filename": "responsive_landing.html",
+      "title": "LaunchPad - SaaS Landing Page",
+      "tier": "partially_responsive",
+      "difficulty": "medium",
+      "ground_truth_issues": [
+        "media_queries",
+        "text_readability"
+      ],
+      "issue_count": 2
+    }
+  ]
+}

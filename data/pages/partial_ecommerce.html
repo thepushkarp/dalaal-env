@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ShopNow - Online Store</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; font-size: 14px; color: #333; }
+        .header { background: #2c3e50; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; }
+        .search-bar { padding: 8px 16px; width: 300px; font-size: 14px; }
+        .nav { background: #34495e; padding: 10px 20px; }
+        .nav a { color: #ecf0f1; text-decoration: none; margin-right: 20px; font-size: 14px; }
+        .banner { background: #3498db; color: #fff; text-align: center; padding: 40px; }
+        .banner h2 { font-size: 32px; margin-bottom: 10px; }
+        .products { display: flex; flex-wrap: wrap; padding: 20px; gap: 20px; justify-content: center; }
+        .product-card { width: 280px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+        .product-card img { width: 280px; height: 200px; object-fit: cover; }
+        .product-card .info { padding: 15px; }
+        .product-card .price { font-size: 20px; color: #e74c3c; font-weight: bold; }
+        .product-card .name { font-size: 16px; margin-bottom: 5px; }
+        .product-card button { width: 100%; padding: 10px; background: #27ae60; color: #fff; border: none; font-size: 14px; cursor: pointer; height: 36px; }
+        .sidebar-filters { width: 250px; padding: 20px; float: left; }
+        .sidebar-filters h3 { font-size: 16px; margin-bottom: 10px; }
+        .sidebar-filters select { width: 100%; padding: 8px; font-size: 14px; margin-bottom: 15px; }
+        .main-shop { display: flex; max-width: 1200px; margin: 0 auto; }
+        footer { background: #2c3e50; color: #bdc3c7; padding: 20px; text-align: center; font-size: 12px; clear: both; }
+
+        @media (max-width: 768px) {
+            .main-shop { flex-direction: column; }
+            .sidebar-filters { width: 100%; float: none; }
+            .header { flex-direction: column; gap: 10px; }
+            .search-bar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ShopNow</h1>
+        <input type="text" class="search-bar" placeholder="Search products...">
+        <a href="#" style="color: #fff; text-decoration: none;">Cart (3)</a>
+    </div>
+
+    <div class="nav">
+        <a href="#">Electronics</a>
+        <a href="#">Clothing</a>
+        <a href="#">Home & Garden</a>
+        <a href="#">Sports</a>
+        <a href="#">Books</a>
+    </div>
+
+    <div class="banner">
+        <h2>Summer Sale - Up to 50% Off!</h2>
+        <p>Shop our biggest deals of the season</p>
+    </div>
+
+    <div class="main-shop">
+        <div class="sidebar-filters">
+            <h3>Filters</h3>
+            <label>Category</label>
+            <select><option>All Categories</option><option>Electronics</option><option>Clothing</option></select>
+            <label>Price Range</label>
+            <select><option>All Prices</option><option>Under $50</option><option>$50-$100</option></select>
+            <label>Rating</label>
+            <select><option>All Ratings</option><option>4+ Stars</option><option>3+ Stars</option></select>
+        </div>
+
+        <div class="products">
+            <div class="product-card">
+                <img src="product-1.jpg" alt="Wireless Headphones">
+                <div class="info">
+                    <p class="name">Premium Wireless Headphones</p>
+                    <p class="price">$79.99</p>
+                    <p>High-quality bluetooth headphones with noise cancellation and 30-hour battery life.</p>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="product-2.jpg" alt="Smart Watch">
+                <div class="info">
+                    <p class="name">FitTrack Smart Watch</p>
+                    <p class="price">$149.99</p>
+                    <p>Advanced fitness tracking with heart rate monitor, GPS, and 7-day battery.</p>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+            <div class="product-card">
+                <img src="product-3.jpg" alt="Laptop Stand">
+                <div class="info">
+                    <p class="name">Ergonomic Laptop Stand</p>
+                    <p class="price">$34.99</p>
+                    <p>Adjustable aluminum stand for laptops up to 17 inches with cable management.</p>
+                    <button>Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 ShopNow Inc. | Privacy Policy | Terms of Service</p>
+    </footer>
+</body>
+</html>
