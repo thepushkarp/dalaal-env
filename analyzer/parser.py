@@ -165,6 +165,55 @@ class PageAnalysis:
         """Get selectors of all elements with a given tag."""
         return [el.selector for el in self.elements if el.tag == tag]
 
+    def list_elements(
+        self,
+        element_filter: str | None = None,
+        limit: int = 50,
+    ) -> list[dict]:
+        """Return element metadata for agent discovery.
+
+        Each dict has: selector, tag, classes, children_count,
+        text_preview, is_interactive. Does NOT include CSS properties —
+        the agent must use inspect_element to get those.
+        """
+        _INTERACTIVE_TAGS = {"a", "button", "input", "select", "textarea"}
+        _LAYOUT_TAGS = {
+            "div", "section", "main", "article", "aside",
+            "nav", "header", "footer",
+        }
+
+        filtered = self.elements
+        if element_filter == "interactive":
+            filtered = [el for el in filtered if el.tag in _INTERACTIVE_TAGS]
+        elif element_filter == "images":
+            filtered = [el for el in filtered if el.tag == "img"]
+        elif element_filter == "tables":
+            filtered = [el for el in filtered if el.tag == "table"]
+        elif element_filter == "layout":
+            filtered = [
+                el for el in filtered
+                if el.tag in _LAYOUT_TAGS and el.children_count > 0
+            ]
+
+        result = []
+        for el in filtered[:limit]:
+            # Build text preview from stored text_length
+            # We don't have the raw text cached, so use a heuristic preview
+            preview = f"[{el.tag}] {el.children_count} children, {el.text_length} chars"
+            if el.element_id:
+                preview = f"[{el.tag}#{el.element_id}] {el.children_count} children"
+
+            result.append({
+                "selector": el.selector,
+                "tag": el.tag,
+                "classes": el.classes,
+                "children_count": el.children_count,
+                "text_length": el.text_length,
+                "is_interactive": el.is_interactive,
+            })
+
+        return result
+
 
 def _find_element_info(
     elements: list[ElementInfo], selector: str,

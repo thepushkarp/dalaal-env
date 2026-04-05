@@ -1,219 +1,298 @@
-# DalaalEnv — Website Responsiveness Audit RL Environment
+# DalaalEnv v2 — Redesign Plan
 
 ## Context
 
-**Hackathon**: Meta PyTorch OpenEnv Hackathon x SST (scaler.com). Build RL environments using Meta's OpenEnv framework.
-- Round 1 (remote, deadline Apr 8): automated `openenv validate` checks + LLM-based scoring of README/design
-- Round 2 (in-person Apr 25-26): code review by Meta engineers, $10K prizes, Meta/HF interview opportunities
-- Framework: [openenv-course](https://github.com/huggingface/openenv-course), environments are Docker microservices with FastAPI/WebSocket
+v1 is complete and passes all validation (structural 8/8, runtime 6/6). But Codex (GPT-5.4 on xhigh) identified five fundamental design issues that would hurt scoring:
 
-**Problem**: No RL environment exists for evaluating website responsiveness. Google Lighthouse does this as a static tool — we make it an interactive RL problem where an agent learns to systematically audit web pages across viewports.
+1. **`run_check` is an oracle** — agent directly queries the same grading functions used by `compute_ground_truth()`. Optimal policy is trivially "run all 10 checks, submit all failures." No genuine RL exploration.
+2. **No discoverable DOM** — `inspect_element` requires a selector the agent must guess. No `list_elements` action. `page_summary` only shows tag frequency counts.
+3. **page_summary disappears** — bug at `environment.py:256` hardcodes `page_summary=""` for all steps after reset.
+4. **Dataset too small** — 5 pages, no fully-responsive (zero-issue) pages, no hard adversarial pages.
+5. **Blank README** — `# dalaal-env` only. Critical for Round 1 LLM scoring.
 
-**Why this is a good RL problem**:
-1. **Exploration has value** — the agent must test multiple viewport sizes and inspect elements to gather evidence
-2. **Genuine tradeoff** — submit early (high efficiency, low accuracy) vs gather all evidence (high accuracy, low efficiency)
-3. **Delayed reward** — reward=0 for all intermediate steps, only computed at episode end (ideal for GRPO)
-4. **LLM-native** — actions are structured JSON, naturally expressible by language models
+**Deadline**: April 8 (2 days). This plan prioritizes changes by Round 1 impact.
 
 ---
 
-## Architecture
+## v2 Action Space Redesign
 
-### Episode Flow
+### Remove `run_check` — Replace with Evidence-Based Exploration
 
+The agent should see the PAGE, not the GRADING FUNCTION's opinion of the page.
+
+**v1 actions (oracle):**
 ```
-RESET → load random HTML page, return page summary at 1280px viewport
-  │
-  ├── set_viewport(width)     → re-analyze at new breakpoint, return layout data
-  ├── inspect_element(selector) → return computed CSS properties of element
-  ├── run_check(check_name)   → run one of 10 responsiveness checks
-  └── submit_report(issues)   → end episode, compute F1 reward
-  │
-  └── max 20 steps, forced submit if budget exhausted
+set_viewport, inspect_element, run_check, submit_report
 ```
 
-### Analysis Engine (no browser — pure CSS/HTML parsing)
-
-Uses `tinycss2` + `beautifulsoup4` to parse HTML/CSS and detect responsive patterns programmatically:
-- Parse `<style>` blocks and extract `@media` rules with tinycss2
-- At any viewport width, filter rules by media condition to resolve applied styles
-- Resolve 6-8 key properties: `width`, `max-width`, `font-size`, `display`, `position`, `overflow-x`
-- Runs in milliseconds per page, zero browser infrastructure needed
-
-### 10 Responsiveness Checks
-
-| Check | Logic |
-|-------|-------|
-| `viewport_meta` | `<meta name="viewport" content="width=device-width">` present |
-| `media_queries` | CSS covers mobile (<=480), tablet (481-1024), desktop (>1024) ranges |
-| `fixed_width_elements` | Elements with fixed px width > 90% of viewport width |
-| `responsive_images` | `<img>` tags have `max-width: 100%` or `width: 100%` |
-| `font_sizing` | >80% of font-size declarations use rem/em/%/vw/clamp() not fixed px |
-| `flexible_layouts` | Major containers use flex/grid, not fixed positioning |
-| `touch_targets` | Clickable elements >= 44px at mobile viewports (<=480px) |
-| `horizontal_scroll` | No elements with fixed width exceeding viewport |
-| `text_readability` | Estimated chars-per-line between 20-90 |
-| `responsive_tables` | Tables have overflow-x: auto wrapper or responsive display rules |
-
-### Reward Function
-
+**v2 actions (evidence-based):**
 ```
-R = F1 * 0.85 + coverage_bonus (max 0.10) + efficiency_bonus (max 0.10)
-
-Where:
-  F1         = 2 * Precision * Recall / (P + R)  over identified vs ground truth issues
-  coverage   = 0.10 * (viewports_tested ∩ {320,375,768,1024,1280,1440}) / 6
-  efficiency = 0.10 * max(0, (max_steps - step_count) / max_steps)
+set_viewport, list_elements, inspect_element, get_page_info, submit_report
 ```
 
-Edge: GT empty (fully responsive page) + agent submits empty → F1=1. GT empty + agent reports issues → F1=0. Correctly penalizes hallucination.
+### New Action: `list_elements`
 
-### Dataset
+Returns all elements at the current viewport with basic metadata — enough to decide what to inspect, but NOT enough to determine responsiveness issues.
 
-30 HTML pages, all CSS embedded inline, across 3 tiers:
-- **10 fully responsive** (modern CSS Grid, media queries, rem fonts) — tests agent doesn't hallucinate
-- **12 partially responsive** (2-5 issues each) — the learning zone
-- **8 non-responsive** (legacy fixed-width, no media queries) — easy to identify
+```python
+# Action
+action_type: "list_elements"
+element_filter: Optional[str]  # "interactive", "images", "tables", "layout", or None (all)
 
-5 archetypes (blog, e-commerce, landing page, dashboard, corporate) x 3 variants (good/partial/legacy) + extras.
-
----
-
-## File Structure
-
-```
-dalaal_env/
-├── __init__.py                    # exports DalaalAction, DalaalObservation, DalaalEnv
-├── models.py                      # Pydantic: DalaalAction, DalaalObservation, DalaalState
-├── client.py                      # DalaalEnv(EnvClient) — WebSocket client
-├── analyzer/
-│   ├── __init__.py
-│   ├── parser.py                  # PageParser → PageAnalysis dataclass, CSS-cascade-lite
-│   ├── checks.py                  # 10 check functions, each → CheckResult
-│   └── scorer.py                  # compute_ground_truth() + compute_reward()
-├── data/
-│   ├── pages/                     # 30 HTML files with embedded CSS
-│   └── manifest.json              # page metadata + pre-computed ground truth
-├── server/
-│   ├── __init__.py
-│   ├── environment.py             # DalaalEnvironment(Environment) — core RL logic
-│   ├── app.py                     # create_app() + main() entry point
-│   └── Dockerfile
-├── openenv.yaml
-├── pyproject.toml                 # [project.scripts] server = "dalaal_env.server.app:main"
-└── uv.lock
-```
-
-### Key Models (models.py)
-
-**DalaalAction** — flat structure with `action_type: Literal[...]` discriminator + optional fields per action type. LLM sees one clean JSON schema. Pydantic `extra="forbid"` from base catches hallucinated fields.
-
-**DalaalObservation** — always has: `page_id`, `current_viewport_width`, `viewports_tested`, `checks_run`, `step_budget_remaining`, `page_summary`. Conditionally has: `element_info` (after inspect), `check_result` (after run_check), `final_scores` (on done), `error` (on invalid action).
-
-**DalaalState** — extends base State with: `page_id`, `current_viewport_width`, `viewports_tested`, `checks_run`, `max_steps`, `submitted`.
-
-### Dependencies (minimal)
-
-```toml
-dependencies = [
-    "openenv-core>=0.2.3",     # framework (FastAPI, uvicorn, pydantic, websockets)
-    "beautifulsoup4>=4.12.0",  # HTML parsing
-    "tinycss2>=1.3.0",         # CSS tokenization + rule parsing
-    "lxml>=5.0.0",             # faster BS4 parser backend
+# Returns in observation.elements_list (new field)
+[
+    {"selector": "div.container", "tag": "div", "classes": ["container"], "children": 5, "text_preview": "LaunchPad Ship Products..."},
+    {"selector": "img", "tag": "img", "has_src": true, "classes": []},
+    {"selector": "a.cta-btn", "tag": "a", "is_interactive": true, "text_preview": "Get Started"},
+    ...
 ]
 ```
 
-No browser. No numpy. No requests. Pure Python analysis running in milliseconds.
+Why this isn't an oracle: it shows element STRUCTURE but not CSS properties or responsiveness issues. The agent must inspect elements and reason about what it finds.
+
+### New Action: `get_page_info`
+
+Returns page-level metadata that persists across steps (fixes the page_summary bug).
+
+```python
+# Action
+action_type: "get_page_info"
+
+# Returns in observation
+page_summary: "Title: ... Elements: ... CSS rules: ... Media queries: ... Viewport meta: yes/no"
+```
+
+### Redesigned `submit_report`
+
+Richer format with per-issue evidence (CONFIRMED — user chose this):
+
+```python
+# Action fields for submit_report
+identified_issues: list[dict]  # each dict has: issue, affected_selectors, affected_viewports, description
+overall_assessment: Literal["responsive", "partially_responsive", "non_responsive"]
+
+# Example payload:
+{
+    "action_type": "submit_report",
+    "identified_issues": [
+        {
+            "issue": "fixed_width_elements",
+            "affected_selectors": [".wrapper"],
+            "affected_viewports": [320, 375],
+            "description": "The .wrapper element has width: 960px which overflows on mobile"
+        }
+    ],
+    "overall_assessment": "non_responsive"
+}
+```
+
+### Timeout Behavior (CONFIRMED — user chose zero reward)
+
+When step limit is hit without submit:
+```python
+reward = 0.0
+done = True
+error = "Step limit reached without submit."
+```
+No oracle fallback. Agent learns that not submitting = 0 reward.
+
+### Reward Changes
+
+```
+R = F1 * 0.85 + evidence_bonus (max 0.05) + coverage_bonus (max 0.05) + efficiency_bonus (max 0.05)
+```
+
+- **F1 (85%)** — comparing issue names from `identified_issues[*].issue` against ground truth
+- **Evidence bonus (5%)** — for each true-positive issue, check if `affected_selectors` actually have the problem and `affected_viewports` are viewports where it manifests. Score = avg correctness across TP issues.
+- **Coverage bonus (5%)** — proportion of standard viewports tested
+- **Efficiency bonus (5%)** — (max_steps - steps_used) / max_steps
+
+Evidence bonus implementation:
+```python
+for each TP issue:
+    gt_check = ground_truth[issue_name]
+    cited_selectors = issue_dict["affected_selectors"]
+    cited_viewports = issue_dict["affected_viewports"]
+    # Check if cited selectors are in gt evidence
+    # Check if cited viewports are ones where the check actually fails
+    evidence_correct += (selector_match + viewport_match) / 2
+evidence_bonus = 0.05 * evidence_correct / max(tp_count, 1)
+```
 
 ---
 
-## Implementation Plan
+## Files to Modify
 
-### Day 1 — Analysis Engine (no server)
+### 1. `models.py` — Updated Action/Observation Models
 
-Build and test the CSS/HTML analysis in isolation:
+Changes:
+- Remove `CheckName` type, `check_name` field from `DalaalAction`
+- Change `ActionType` to: `set_viewport | list_elements | inspect_element | get_page_info | submit_report`
+- Add `element_filter: Optional[Literal["interactive", "images", "tables", "layout"]]` field
+- Change `identified_issues` from `Optional[list[str]]` to `Optional[list[dict]]` (rich evidence)
+- Add `overall_assessment: Optional[Literal["responsive", "partially_responsive", "non_responsive"]]`
+- Add `elements_list: Optional[list[dict]]` to `DalaalObservation` (for list_elements response)
+- Remove `check_result` from `DalaalObservation`
+- Remove `checks_run` and `checks_failed` from `DalaalState` and `DalaalObservation`
 
-1. **`analyzer/parser.py`** — `PageParser.parse(html, page_id) → PageAnalysis`
-   - BeautifulSoup for element tree + inline styles
-   - tinycss2 for `<style>` blocks + `@media` rule extraction
-   - `PageAnalysis.get_element_css(selector, viewport_width)` for viewport-aware property resolution
-2. **`analyzer/checks.py`** — implement all 10 checks, start with simplest (viewport_meta, media_queries, responsive_images = pure string matching)
-3. **`analyzer/scorer.py`** — `compute_ground_truth()` and `compute_reward()`
-4. **5 test HTML pages** (1 per archetype, covering all 3 tiers)
-5. **`data/manifest.json`** — run scorer offline to populate ground_truth_issues
-6. Manual test: `python -c "from dalaal_env.analyzer.parser import PageParser; ..."`
+### 2. `server/environment.py` — Core Episode Logic
 
-### Day 2 — OpenEnv Integration
+Changes:
+- Remove `_handle_run_check` method entirely
+- Add `_handle_list_elements(action, analysis)`:
+  - Build metadata list from `analysis.elements`
+  - Apply filter if `action.element_filter` is set
+  - Return: `[{selector, tag, classes, children_count, text_preview (first 60 chars), is_interactive}]`
+  - Cap at 50 elements to keep observation size manageable
+- Add `_handle_get_page_info(analysis)`:
+  - Returns `analysis.summary()` at any step (fixes page_summary bug)
+- Update `_handle_submit_report`:
+  - Accept `identified_issues` as `list[dict]` (each with issue, affected_selectors, affected_viewports, description)
+  - Extract issue names for F1, pass full dicts for evidence bonus
+- Timeout: return `reward=0.0, done=True, error="Step limit reached"` — no auto-submit
+- Remove `checks_run` / `checks_failed` tracking from state
+- Remove `page_summary` from `_obs()` builder (agent uses `get_page_info` explicitly)
 
-Wire analysis engine into the framework:
+### 3. `analyzer/scorer.py` — Updated Reward Function
 
-1. **`models.py`** — DalaalAction, DalaalObservation, DalaalState (exact Pydantic classes from architecture doc)
-2. **`server/environment.py`** — DalaalEnvironment with `reset()`, `step()`, `state`. 4 action handlers. Error obs on invalid actions (never crash GRPO rollouts).
-3. **`server/app.py`** — `create_app(DalaalEnvironment, DalaalAction, DalaalObservation, env_name="dalaal_env", max_concurrent_envs=8)`
-4. **`client.py`** — DalaalEnv(EnvClient) with `_step_payload`, `_parse_result`, `_parse_state`
-5. **`__init__.py`**, **`openenv.yaml`**, update **`pyproject.toml`**, run `uv lock`
-6. Run `openenv validate` — fix structural issues
-7. Start server: `uv run server` → test endpoints with curl
-8. Run `openenv validate --url http://localhost:8000` — all runtime checks must pass
+Changes:
+- Update `compute_reward()` signature: `identified` becomes `list[dict]`, add `ground_truth_evidence` param
+- Extract issue names from `item["issue"]` for F1 computation
+- Add `_compute_evidence_bonus(identified_dicts, ground_truth)`:
+  - For each TP issue, check if cited selectors appear in GT evidence strings
+  - For each TP issue, check if cited viewports are ones where check actually fails
+  - Return average correctness * 0.05
+- Remove `checks_run` param (no longer tracked)
+- Adjust weights: 0.85 F1 + 0.05 evidence + 0.05 coverage + 0.05 efficiency
 
-### Day 3 — Dataset, Polish, Deploy
+### 4. `analyzer/parser.py` — Add Element Listing Support
 
-1. Expand dataset to 30 HTML pages (5 archetypes x 3 variants + 15 extras)
-2. Re-run scorer to fill manifest.json ground truth for all pages
-3. Test `server/Dockerfile` locally with `openenv build`
-4. Write README with: problem statement, action space table, observation schema, reward formula, example episode transcript (critical for Round 1 LLM scoring)
-5. `openenv push --repo-id <username>/dalaal-env`
-6. `openenv validate --url https://<username>-dalaal-env.hf.space` — final verification
+Changes:
+- Add `PageAnalysis.list_elements(element_filter=None, limit=50)`:
+  - Returns `list[dict]` with keys: `selector, tag, classes, children_count, text_preview, is_interactive`
+  - `text_preview`: first 60 chars of element's text content
+  - Filters:
+    - `"interactive"` → a, button, input, select, textarea
+    - `"images"` → img
+    - `"tables"` → table
+    - `"layout"` → div, section, main, article, aside, nav, header, footer (with children > 0)
+    - `None` → all elements
+  - Uses existing `ElementInfo` dataclass — minimal new code
+  - Capped at `limit` elements to keep observation compact
+
+### 5. `client.py` — Updated Client
+
+Changes:
+- Update `_step_payload` and `_parse_result` for new action/observation fields
+- Remove check-related code
+
+### 6. `data/` — Expanded Dataset (15-20 pages)
+
+Target: 20 pages total (15 new + 5 existing).
+
+**Fully responsive (5 new, zero issues):**
+- `responsive_portfolio.html` — CSS Grid gallery, clamp() fonts, responsive images
+- `responsive_form.html` — contact form with flexbox layout, rem spacing
+- `responsive_docs.html` — documentation page with sidebar that collapses on mobile
+- `responsive_gallery.html` — image grid with auto-fit, responsive breakpoints
+- `responsive_nav.html` — hamburger menu pattern, mobile-first media queries
+
+**Partially responsive (3 new, 2-4 issues):**
+- `partial_news.html` — news site with fixed-width sidebar, px fonts, but has viewport meta
+- `partial_portfolio.html` — portfolio with fixed image sizes but flexible layout
+- `partial_table_heavy.html` — data dashboard with responsive layout but fixed-width tables
+
+**Non-responsive (2 new, 6+ issues):**
+- `legacy_restaurant.html` — 800px fixed layout, no viewport meta, table-based
+- `legacy_forum.html` — nested tables, fixed widths, px everything
+
+**Adversarial (3 new):**
+- `tricky_desktop_first.html` — desktop-first design, no explicit desktop media query (should pass — tests media_queries check isn't overly strict)
+- `tricky_hidden_overflow.html` — uses overflow:hidden to mask issues (looks clean but content is clipped)
+- `tricky_inline_styles.html` — all styles are inline, no `<style>` blocks (tests parser handles inline-only pages)
+
+Regenerate `manifest.json` with ground truth after all pages are created.
+
+### 7. `README.md` — Comprehensive Documentation
+
+Structure:
+```
+# DalaalEnv — Website Responsiveness Audit RL Environment
+
+## Overview
+What this environment does and why it's an RL problem.
+
+## Quick Start
+Install, run server, connect client, play an episode.
+
+## Action Space
+Table: action_type, required fields, description, example payload.
+
+## Observation Space
+Table: field, type, description, when populated.
+
+## Reward Function
+Formula, explanation of each component, edge cases.
+
+## Example Episode
+5-step JSON transcript: reset → list_elements → set_viewport(375) → inspect_element(.wrapper) → submit_report.
+
+## Dataset
+How pages are structured, quality tiers, how to add pages.
+
+## What Makes This a Good RL Problem
+- Exploration: agent must test multiple viewports and inspect elements
+- Reasoning: agent must interpret raw CSS properties, not check results
+- Tradeoff: gather evidence vs submit efficiently
+- Delayed reward: only terminal reward via GRPO
+
+## Technical Details
+CSS-cascade-lite analysis engine, how ground truth is computed.
+```
 
 ---
 
-## What Will Impress Judges
+## Implementation Order (2 days)
 
-**Code quality signals**:
-- Full type annotations everywhere
-- `SUPPORTS_CONCURRENT_SESSIONS = True` (shows GRPO awareness)
-- Page cache avoids re-parsing identical HTML across episodes
-- Deterministic seeding (`reset(seed=42)` always picks same page)
-- Graceful error handling — invalid actions return error obs, never crash
-- Ground truth never leaked to agent in any observation
+### Block 1: Core Redesign (3-4 hours)
+1. Update `models.py` — new action types, remove run_check, richer submit
+2. Update `server/environment.py` — remove `_handle_run_check`, add `_handle_list_elements` + `_handle_get_page_info`, fix page_summary bug, update timeout
+3. Update `analyzer/scorer.py` — richer reward with evidence bonus
+4. Add `list_elements()` method to `PageAnalysis`
+5. Update `client.py` for new fields
+6. Run `openenv validate` — must still pass
 
-**RL design quality**:
-- Non-trivial reward — cannot get F1=1 without gathering evidence
-- Exploration incentivized — more viewports tested = higher coverage bonus
-- Graded difficulty — manifest has easy/medium/hard pages for curriculum learning
-- `final_scores` breakdown shows exactly where reward came from
+### Block 2: Dataset Expansion (2-3 hours)
+7. Write 10-15 new HTML pages across all tiers
+8. Regenerate `manifest.json` with ground truth
+9. Verify ground truth distribution makes sense
 
-**README for LLM scoring**:
-- Clear problem statement
-- Action space + observation tables
-- Reward formula written out
-- 5-step example episode transcript with actual JSON payloads and rewards
-- Why this is a good RL problem (exploration, delayed reward, real-world applicability)
+### Block 3: README (1-2 hours)
+10. Write comprehensive README with all sections above
+11. Include example episode transcript with actual JSON
+
+### Block 4: Verify & Deploy (1 hour)
+12. Run `openenv validate` (structural)
+13. Start server, run `openenv validate --url` (runtime)
+14. Test full episode via client
+15. Commit and push
 
 ---
+
+## What We Keep from v1
+
+- **Analysis engine** (`analyzer/parser.py`, `analyzer/checks.py`) — the 10 checks stay as INTERNAL grading functions. They just aren't exposed to the agent anymore.
+- **CSS-cascade-lite** — `PageAnalysis`, `get_element_css()`, all working correctly after v1 fixes
+- **F1-based reward** — proven to work, with small refinements
+- **OpenEnv wiring** — `create_app()`, Dockerfile, `openenv.yaml`, all passing validation
+- **Unique selector generation** — `_build_selector()` with `:nth(n)` dedup (fixed in v1)
 
 ## Verification
 
-1. `openenv validate` — all 8 structural checks pass
-2. `openenv validate --url http://localhost:8000` — all 6 runtime checks pass
-3. Manual episode: reset → set_viewport(320) → run_check("viewport_meta") → inspect_element("img") → submit_report(["fixed_width_elements"]) → verify reward makes sense
-4. Edge case: submit empty report on fully responsive page → reward should be ~1.0
-5. Edge case: submit all 10 issues on fully responsive page → reward should be ~0.0
-6. Edge case: hit step limit without submitting → forced submit, low reward
-7. `openenv push` + live validation on HF Spaces
-
----
-
-## Existing Resources to Reuse
-
-- **OpenEnv template code**: `.venv/lib/python3.12/site-packages/openenv/cli/templates/openenv_env/` — exact patterns for app.py, client.py, models.py, Dockerfile, import try/except pattern
-- **Detailed architecture doc**: `docs/plans/ticklish-questing-avalanche-agent-aea280722fd1c7c13.md` — full Pydantic class definitions, environment pseudocode, check implementations, reward formula edge cases
-
----
-
-## Unresolved Questions
-
-1. Should we also support an "agent fixes the CSS" mode (beyond audit)? → **Defer to v2** — audit mode is simpler and clearer for the hackathon deadline
-2. Should `severity_scores` in submit_report be included in v1? → **Include the field but make severity_bonus optional** — shows design forethought without adding implementation complexity
-3. Should ground truth be pre-computed in manifest.json or computed at reset time? → **Both** — pre-compute for fast resets, but also validate by re-computing at startup
-4. How to handle external CSS (`<link>` tags)? → **All test pages embed CSS inline** — avoids HTTP fetching, keeps the environment self-contained
+1. `openenv validate` — 8/8 structural checks pass
+2. `openenv validate --url http://localhost:8000` — 6/6 runtime checks pass
+3. Manual episode test: reset → list_elements → set_viewport(375) → inspect_element(selector) → submit_report → verify reward
+4. Edge case: submit on fully responsive page with no issues → reward ~1.0
+5. Edge case: submit all 10 issues on responsive page → reward ~0.0 (false positives penalized)
+6. Edge case: timeout without submit → zero reward (not oracle-based fallback)
+7. `GET /schema` returns updated action/observation schemas
