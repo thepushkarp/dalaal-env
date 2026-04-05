@@ -450,6 +450,65 @@ def check_horizontal_scroll(
     )
 
 
+_REM_EM_RE = re.compile(r"^(-?\d+(?:\.\d+)?)\s*(rem|em)$")
+_BASE_FONT_PX = 16.0
+
+
+def _css_value_to_px(value: str, viewport_width: int) -> float | None:
+    """Convert a CSS length value to px. Returns None if unparseable."""
+    v = value.strip()
+    px = _parse_px(v)
+    if px is not None:
+        return px
+
+    m = _PERCENT_RE.match(v)
+    if m:
+        return viewport_width * float(m.group(1)) / 100
+
+    m = _REM_EM_RE.match(v)
+    if m:
+        return float(m.group(1)) * _BASE_FONT_PX
+
+    return None
+
+
+def _estimate_element_width(css: dict[str, str], viewport_width: int) -> float:
+    """Estimate element width in px, honoring max-width."""
+    el_width = float(viewport_width)
+
+    width_val = css.get("width", "")
+    if width_val:
+        px = _css_value_to_px(width_val, viewport_width)
+        if px is not None:
+            el_width = px
+
+    # max-width constrains the computed width
+    max_width_val = css.get("max-width", "")
+    if max_width_val:
+        max_px = _css_value_to_px(max_width_val, viewport_width)
+        if max_px is not None:
+            el_width = min(el_width, max_px)
+
+    return el_width
+
+
+def _estimate_font_size_px(value: str) -> float:
+    """Convert font-size value to px estimate."""
+    if not value:
+        return _BASE_FONT_PX
+
+    px = _parse_px(value.strip())
+    if px is not None:
+        return px
+
+    m = _REM_EM_RE.match(value.strip())
+    if m:
+        return float(m.group(1)) * _BASE_FONT_PX
+
+    # clamp(), calc(), or other complex values — use default
+    return _BASE_FONT_PX
+
+
 def check_text_readability(
     analysis: PageAnalysis, viewport_width: int,
 ) -> CheckResult:
@@ -460,7 +519,7 @@ def check_text_readability(
 
     text_elements = [
         el for el in analysis.elements
-        if el.tag in ("p", "li", "td", "th", "blockquote", "span", "div")
+        if el.tag in ("p", "li", "td", "th", "blockquote")
         and el.text_length > 50
     ]
 
@@ -469,22 +528,11 @@ def check_text_readability(
         if css is None:
             continue
 
-        # Estimate element width
-        width_val = css.get("width", "")
-        el_width = float(viewport_width)
-        px = _parse_px(width_val)
-        if px is not None:
-            el_width = px
-        elif "%" in width_val:
-            m = _PERCENT_RE.match(width_val.strip())
-            if m:
-                el_width = viewport_width * float(m.group(1)) / 100
+        # Estimate element width (consider both width and max-width)
+        el_width = _estimate_element_width(css, viewport_width)
 
-        # Estimate font size
-        fs_val = css.get("font-size", "16px")
-        fs_px = _parse_px(fs_val)
-        if fs_px is None:
-            fs_px = 16.0  # default
+        # Estimate font size (handle rem/em → px conversion)
+        fs_px = _estimate_font_size_px(css.get("font-size", ""))
 
         if fs_px <= 0:
             continue

@@ -32,10 +32,9 @@
         "font_sizing",
         "horizontal_scroll",
         "media_queries",
-        "text_readability",
         "touch_targets"
       ],
-      "issue_count": 7
+      "issue_count": 6
     },
     {
       "id": "partial_ecommerce",
@@ -61,10 +60,9 @@
       "tier": "partially_responsive",
       "difficulty": "medium",
       "ground_truth_issues": [
-        "media_queries",
-        "text_readability"
+        "media_queries"
       ],
-      "issue_count": 2
+      "issue_count": 1
     },
     {
       "id": "responsive_landing",
@@ -73,10 +71,9 @@
       "tier": "partially_responsive",
       "difficulty": "medium",
       "ground_truth_issues": [
-        "media_queries",
-        "text_readability"
+        "media_queries"
       ],
-      "issue_count": 2
+      "issue_count": 1
     }
   ]
 }

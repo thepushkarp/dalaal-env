@@ -123,46 +123,32 @@ class PageAnalysis:
 
         Returns dict of {property: value} or None if selector matches nothing.
         Uses cascade-lite: last matching rule wins (no specificity calc).
+        Matches by element identity (our unique selector), not re-parsing HTML.
         """
         cache_key = (selector, viewport_width)
         if cache_key in self._style_cache:
             return self._style_cache[cache_key]
 
-        # Check the selector matches at least one element
-        try:
-            soup = BeautifulSoup(self.html, "lxml")
-            matches = soup.select(selector)
-        except Exception:
+        # Find element by our unique selector
+        target_el = _find_element_info(self.elements, selector)
+        if target_el is None:
             return None
 
-        if not matches:
-            return None
-
-        # Resolve styles: start with inline, overlay cascade rules
-        first_match = matches[0]
         resolved: dict[str, str] = {}
 
-        # Apply rules in source order (last wins for same property)
+        # Apply CSS rules in source order (last wins for same property)
         for rule in self.css_rules:
             if not rule.applies_at(viewport_width):
                 continue
-            try:
-                if soup.select(rule.selector):
-                    # Check if the rule's selector matches our target element
-                    rule_matches = soup.select(rule.selector)
-                    if first_match in rule_matches:
-                        for prop, val in rule.declarations.items():
-                            if prop in TRACKED_PROPERTIES:
-                                resolved[prop] = val
-            except Exception:
-                continue
+            if _rule_matches_element(rule.selector, target_el):
+                for prop, val in rule.declarations.items():
+                    if prop in TRACKED_PROPERTIES:
+                        resolved[prop] = val
 
         # Inline styles override cascade
-        inline_el = _find_element_info(self.elements, selector)
-        if inline_el:
-            for prop, val in inline_el.inline_styles.items():
-                if prop in TRACKED_PROPERTIES:
-                    resolved[prop] = val
+        for prop, val in target_el.inline_styles.items():
+            if prop in TRACKED_PROPERTIES:
+                resolved[prop] = val
 
         self._style_cache[cache_key] = resolved
         return resolved
@@ -183,11 +169,55 @@ class PageAnalysis:
 def _find_element_info(
     elements: list[ElementInfo], selector: str,
 ) -> ElementInfo | None:
-    """Find an ElementInfo by its selector."""
+    """Find an ElementInfo by its unique selector."""
     for el in elements:
         if el.selector == selector:
             return el
     return None
+
+
+# Simple pattern to split a CSS selector into tag, id, classes
+_SELECTOR_PART_RE = re.compile(r"([a-zA-Z][a-zA-Z0-9]*)?(?:#([a-zA-Z0-9_-]+))?((?:\.[a-zA-Z0-9_-]+)*)")
+
+
+def _rule_matches_element(css_selector: str, element: ElementInfo) -> bool:
+    """Check if a CSS rule selector matches an element.
+
+    Handles simple selectors: tag, .class, #id, tag.class, tag#id.
+    For compound selectors (descendant, child combinators), matches
+    only on the rightmost segment as an approximation.
+    """
+    # Use the rightmost segment for descendant/child selectors
+    parts = css_selector.strip().split()
+    rightmost = parts[-1] if parts else css_selector.strip()
+
+    # Remove pseudo-classes/elements for matching
+    rightmost = rightmost.split(":")[0]
+
+    m = _SELECTOR_PART_RE.match(rightmost)
+    if not m:
+        return False
+
+    tag_part = m.group(1)
+    id_part = m.group(2)
+    class_str = m.group(3)
+
+    # Tag must match (if specified)
+    if tag_part and tag_part != element.tag:
+        return False
+
+    # ID must match (if specified)
+    if id_part and id_part != element.element_id:
+        return False
+
+    # All classes in the selector must be present on the element
+    if class_str:
+        required_classes = [c for c in class_str.split(".") if c]
+        for cls in required_classes:
+            if cls not in element.classes:
+                return False
+
+    return True
 
 
 # --- Media query parsing ---
@@ -312,34 +342,34 @@ def _parse_css(css_text: str) -> tuple[list[CSSRule], list[MediaQueryInfo]]:
 _INTERACTIVE_TAGS = frozenset({"a", "button", "input", "select", "textarea"})
 
 
-def _build_selector(tag: Tag) -> str:
-    """Build a simple CSS selector for a BeautifulSoup Tag.
+def _build_selector(tag: Tag, seen_counts: dict[str, int]) -> str:
+    """Build a unique CSS selector for a BeautifulSoup Tag.
 
-    Format: tag#id.class1.class2 or tag.class1 or tag[n] if no id/class.
+    Uses element index tracking to disambiguate repeated selectors.
+    Format: tag#id or tag.class1.class2[n] where [n] is the occurrence index.
     """
     parts = [tag.name]
 
     tag_id = tag.get("id")
     if tag_id:
         parts.append(f"#{tag_id}")
-        return "".join(parts)
+        base = "".join(parts)
+        # IDs should be unique, but track anyway
+        seen_counts[base] = seen_counts.get(base, 0) + 1
+        return base
 
     classes = tag.get("class", [])
     if classes:
         parts.extend(f".{cls}" for cls in classes[:3])
-        return "".join(parts)
 
-    # Fallback: use tag name with sibling index
-    if tag.parent:
-        siblings = [
-            s for s in tag.parent.children
-            if isinstance(s, Tag) and s.name == tag.name
-        ]
-        if len(siblings) > 1:
-            idx = siblings.index(tag) + 1
-            parts.append(f":nth-of-type({idx})")
+    base = "".join(parts)
+    seen_counts[base] = seen_counts.get(base, 0) + 1
+    count = seen_counts[base]
 
-    return "".join(parts)
+    # Always append occurrence index for non-ID selectors to ensure uniqueness
+    if count > 1:
+        return f"{base}:nth({count})"
+    return base
 
 
 def _parse_inline_style(style_attr: str | None) -> dict[str, str]:
@@ -365,6 +395,7 @@ def _parse_inline_style(style_attr: str | None) -> dict[str, str]:
 def _extract_elements(soup: BeautifulSoup) -> list[ElementInfo]:
     """Extract all meaningful elements from parsed HTML."""
     elements: list[ElementInfo] = []
+    seen_counts: dict[str, int] = {}
 
     for tag in soup.find_all(True):
         if tag.name in ("html", "head", "meta", "link", "script", "style", "br", "hr"):
@@ -375,7 +406,7 @@ def _extract_elements(soup: BeautifulSoup) -> list[ElementInfo]:
 
         elements.append(ElementInfo(
             tag=tag.name,
-            selector=_build_selector(tag),
+            selector=_build_selector(tag, seen_counts),
             element_id=tag.get("id", ""),
             classes=tag.get("class", []),
             inline_styles=_parse_inline_style(tag.get("style")),

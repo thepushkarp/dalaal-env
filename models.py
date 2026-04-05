@@ -118,5 +118,6 @@ class DalaalState(State):
     current_viewport_width: int = Field(default=1280)
     viewports_tested: list[int] = Field(default_factory=list)
     checks_run: list[str] = Field(default_factory=list)
+    checks_failed: list[str] = Field(default_factory=list)
     max_steps: int = Field(default=20)
     submitted: bool = Field(default=False)

@@ -85,6 +85,7 @@ class DalaalEnvironment(
             current_viewport_width=1280,
             viewports_tested=[1280],
             checks_run=[],
+            checks_failed=[],
             max_steps=MAX_STEPS,
             submitted=False,
         )
@@ -180,6 +181,8 @@ class DalaalEnvironment(
 
         if action.check_name not in self._state.checks_run:
             self._state.checks_run.append(action.check_name)
+        if not result.passed and action.check_name not in self._state.checks_failed:
+            self._state.checks_failed.append(action.check_name)
 
         return self._obs(check_result={
             "check_name": result.check_name,
@@ -222,7 +225,7 @@ class DalaalEnvironment(
         if budget == 0 and not self._state.submitted:
             self._state.submitted = True
             reward_val, breakdown = compute_reward(
-                identified=self._state.checks_run,
+                identified=self._state.checks_failed,
                 ground_truth=self._current_gt,
                 viewports_tested=self._state.viewports_tested,
                 checks_run=self._state.checks_run,
@@ -239,7 +242,7 @@ class DalaalEnvironment(
                 step_budget_remaining=0,
                 page_summary="",
                 final_scores=breakdown,
-                error="Step limit reached. Auto-submitted using checks_run as issues.",
+                error="Step limit reached. Auto-submitted using failed checks only.",
             )
 
         return DalaalObservation(
