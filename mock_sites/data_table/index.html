@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Directory</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; padding: 24px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { margin-bottom: 16px; }
+    .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .controls input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 250px; }
+    .controls select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .controls button { padding: 8px 16px; background: #1976D2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .controls .delete-btn { background: #f44336; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    th { background: #1a1a2e; color: white; padding: 12px; text-align: left; font-size: 14px; cursor: pointer; user-select: none; }
+    th:hover { background: #2a2a4e; }
+    th .sort-arrow { font-size: 10px; margin-left: 4px; }
+    td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; }
+    tr:hover { background: #f5f9ff; }
+    td input[type="checkbox"] { width: 16px; height: 16px; }
+    .status { padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+    .status.active { background: #e8f5e9; color: #2e7d32; }
+    .status.inactive { background: #fce4ec; color: #c62828; }
+    .status.on-leave { background: #fff3e0; color: #e65100; }
+    .stats { margin-top: 16px; font-size: 14px; color: #666; }
+    #action-result { display: none; margin-top: 12px; padding: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Directory</h1>
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search by name..." aria-label="Search employees" oninput="renderTable()">
+      <select id="dept-filter" aria-label="Filter by department" onchange="renderTable()">
+        <option value="">All Departments</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Sales">Sales</option>
+        <option value="HR">HR</option>
+        <option value="Finance">Finance</option>
+      </select>
+      <select id="status-filter" aria-label="Filter by status" onchange="renderTable()">
+        <option value="">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+        <option value="On Leave">On Leave</option>
+      </select>
+      <button class="delete-btn" onclick="deleteSelected()" aria-label="Delete selected employees">Delete Selected</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px"><input type="checkbox" id="select-all" onclick="toggleAll()" aria-label="Select all"></th>
+          <th onclick="sortBy('name')">Name <span class="sort-arrow" id="sort-name"></span></th>
+          <th onclick="sortBy('department')">Department <span class="sort-arrow" id="sort-department"></span></th>
+          <th onclick="sortBy('role')">Role <span class="sort-arrow" id="sort-role"></span></th>
+          <th onclick="sortBy('salary')">Salary <span class="sort-arrow" id="sort-salary"></span></th>
+          <th onclick="sortBy('status')">Status <span class="sort-arrow" id="sort-status"></span></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div class="stats" id="stats"></div>
+    <div id="action-result"></div>
+  </div>
+
+  <script>
+    let employees = [
+      { id: 1, name: "Alice Johnson", department: "Engineering", role: "Senior Developer", salary: 145000, status: "Active" },
+      { id: 2, name: "Bob Martinez", department: "Marketing", role: "Marketing Manager", salary: 112000, status: "Active" },
+      { id: 3, name: "Carol White", department: "Engineering", role: "Tech Lead", salary: 168000, status: "Active" },
+      { id: 4, name: "David Chen", department: "Sales", role: "Sales Director", salary: 135000, status: "On Leave" },
+      { id: 5, name: "Emma Davis", department: "HR", role: "HR Coordinator", salary: 78000, status: "Active" },
+      { id: 6, name: "Frank Wilson", department: "Finance", role: "Financial Analyst", salary: 95000, status: "Active" },
+      { id: 7, name: "Grace Lee", department: "Engineering", role: "Junior Developer", salary: 85000, status: "Active" },
+      { id: 8, name: "Henry Brown", department: "Marketing", role: "Content Writer", salary: 72000, status: "Inactive" },
+      { id: 9, name: "Irene Zhang", department: "Engineering", role: "DevOps Engineer", salary: 138000, status: "Active" },
+      { id: 10, name: "Jack Thompson", department: "Sales", role: "Account Executive", salary: 98000, status: "Active" },
+      { id: 11, name: "Karen Patel", department: "Finance", role: "Accounting Manager", salary: 120000, status: "On Leave" },
+      { id: 12, name: "Leo Garcia", department: "HR", role: "Recruiter", salary: 82000, status: "Active" },
+    ];
+
+    let sortField = null, sortAsc = true;
+
+    function getFiltered() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const dept = document.getElementById('dept-filter').value;
+      const status = document.getElementById('status-filter').value;
+      let data = [...employees];
+      if (search) data = data.filter(e => e.name.toLowerCase().includes(search));
+      if (dept) data = data.filter(e => e.department === dept);
+      if (status) data = data.filter(e => e.status === status);
+      if (sortField) {
+        data.sort((a, b) => {
+          let va = a[sortField], vb = b[sortField];
+          if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+          if (va < vb) return sortAsc ? -1 : 1;
+          if (va > vb) return sortAsc ? 1 : -1;
+          return 0;
+        });
+      }
+      return data;
+    }
+
+    function sortBy(field) {
+      if (sortField === field) sortAsc = !sortAsc;
+      else { sortField = field; sortAsc = true; }
+      document.querySelectorAll('.sort-arrow').forEach(el => el.textContent = '');
+      const arrow = document.getElementById('sort-' + field);
+      if (arrow) arrow.textContent = sortAsc ? '▲' : '▼';
+      renderTable();
+    }
+
+    function renderTable() {
+      const data = getFiltered();
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = data.map(e => {
+        const statusCls = e.status.toLowerCase().replace(' ', '-');
+        return `<tr>
+          <td><input type="checkbox" data-id="${e.id}" class="row-check" aria-label="Select ${e.name}"></td>
+          <td>${e.name}</td>
+          <td>${e.department}</td>
+          <td>${e.role}</td>
+          <td>$${e.salary.toLocaleString()}</td>
+          <td><span class="status ${statusCls}">${e.status}</span></td>
+        </tr>`;
+      }).join('');
+      const totalSalary = data.reduce((s, e) => s + e.salary, 0);
+      document.getElementById('stats').textContent =
+        `Showing ${data.length} of ${employees.length} employees | Total salary: $${totalSalary.toLocaleString()}`;
+    }
+
+    function toggleAll() {
+      const checked = document.getElementById('select-all').checked;
+      document.querySelectorAll('.row-check').forEach(cb => cb.checked = checked);
+    }
+
+    function deleteSelected() {
+      const ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => parseInt(cb.dataset.id));
+      if (ids.length === 0) return;
+      const names = employees.filter(e => ids.includes(e.id)).map(e => e.name);
+      employees = employees.filter(e => !ids.includes(e.id));
+      renderTable();
+      const msg = document.getElementById('action-result');
+      msg.textContent = `Deleted ${names.length} employee(s): ${names.join(', ')}`;
+      msg.style.display = 'block';
+      msg.dataset.deletedIds = JSON.stringify(ids);
+      msg.dataset.deletedNames = JSON.stringify(names);
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>

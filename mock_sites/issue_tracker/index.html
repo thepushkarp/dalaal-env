@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IssueTrack - backend-api</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; }
+    .topbar { background: #24292e; color: white; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+    .topbar h1 { font-size: 18px; font-weight: normal; }
+    .topbar .repo { font-weight: bold; }
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid #e0e0e0; background: white; padding: 0 24px; }
+    .tabs .tab { padding: 12px 16px; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+    .tabs .tab.active { border-bottom-color: #e65100; font-weight: bold; }
+    .content { max-width: 1000px; margin: 16px auto; padding: 0 16px; }
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .filter-bar select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+    .filter-bar .count { font-size: 14px; color: #666; margin-left: auto; }
+    .issue-list { background: white; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+    .issue-item { display: flex; align-items: flex-start; padding: 12px 16px; border-bottom: 1px solid #eee; cursor: pointer; }
+    .issue-item:last-child { border-bottom: none; }
+    .issue-item:hover { background: #f9f9f9; }
+    .issue-icon { width: 20px; height: 20px; border-radius: 50%; margin-right: 12px; margin-top: 2px; flex-shrink: 0; }
+    .issue-icon.open { background: #2ea44f; }
+    .issue-icon.closed { background: #d73a49; }
+    .issue-content { flex: 1; }
+    .issue-content .title { font-size: 15px; font-weight: 600; }
+    .issue-content .meta { font-size: 12px; color: #888; margin-top: 4px; }
+    .issue-labels { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    .label { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+    .label.bug { background: #fce4ec; color: #c62828; }
+    .label.feature { background: #e3f2fd; color: #1565c0; }
+    .label.urgent { background: #fff3e0; color: #e65100; }
+    .label.docs { background: #f3e5f5; color: #7b1fa2; }
+    /* Issue detail */
+    #issue-detail { display: none; background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 24px; }
+    #issue-detail .issue-header { margin-bottom: 16px; }
+    #issue-detail .issue-header h2 { font-size: 20px; margin-bottom: 8px; }
+    #issue-detail .issue-body { font-size: 14px; line-height: 1.6; margin-bottom: 16px; white-space: pre-wrap; padding: 16px; background: #f9f9f9; border-radius: 4px; }
+    .label-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+    .label-controls select { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+    .label-controls button { padding: 6px 12px; background: #2ea44f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .back-btn { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 13px; margin-bottom: 16px; }
+    #label-success { display: none; margin-top: 8px; padding: 8px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1><span class="repo">acme-corp</span> / <span class="repo">backend-api</span></h1>
+  </div>
+  <div class="tabs">
+    <div class="tab">Code</div>
+    <div class="tab active">Issues</div>
+    <div class="tab">Pull Requests</div>
+    <div class="tab">Actions</div>
+  </div>
+
+  <div class="content">
+    <div id="issue-list-page">
+      <div class="filter-bar">
+        <select id="status-filter" aria-label="Filter by status" onchange="renderIssues()">
+          <option value="open">Open</option>
+          <option value="closed">Closed</option>
+          <option value="">All</option>
+        </select>
+        <select id="assignee-filter" aria-label="Filter by assignee" onchange="renderIssues()">
+          <option value="">All Assignees</option>
+          <option value="maria">maria</option>
+          <option value="james">james</option>
+          <option value="sarah">sarah</option>
+          <option value="alex">alex</option>
+        </select>
+        <select id="label-filter" aria-label="Filter by label" onchange="renderIssues()">
+          <option value="">All Labels</option>
+          <option value="bug">bug</option>
+          <option value="feature">feature</option>
+          <option value="urgent">urgent</option>
+          <option value="docs">docs</option>
+        </select>
+        <div class="count" id="issue-count"></div>
+      </div>
+      <div class="issue-list" id="issue-list"></div>
+    </div>
+
+    <div id="issue-detail">
+      <button class="back-btn" onclick="backToList()" aria-label="Back to issue list">Back to Issues</button>
+      <div class="issue-header">
+        <h2 id="detail-title"></h2>
+        <div style="font-size:13px;color:#888" id="detail-meta"></div>
+        <div class="issue-labels" id="detail-labels"></div>
+      </div>
+      <div class="issue-body" id="detail-body"></div>
+      <div class="label-controls">
+        <span style="font-size:13px;font-weight:500">Add label:</span>
+        <select id="add-label-select" aria-label="Select label to add">
+          <option value="">Choose...</option>
+          <option value="bug">bug</option>
+          <option value="feature">feature</option>
+          <option value="urgent">urgent</option>
+          <option value="docs">docs</option>
+        </select>
+        <button onclick="addLabel()" aria-label="Add label">Add</button>
+      </div>
+      <div id="label-success"></div>
+    </div>
+  </div>
+
+  <script>
+    const issues = [
+      { id: 101, title: "API gateway timeout on /users endpoint", status: "open", assignee: "maria", labels: ["bug"], body: "When making GET requests to /users with a large dataset (>10k records), the API gateway returns a 504 timeout error after 30 seconds.\n\nSteps to reproduce:\n1. Seed database with 15k user records\n2. Call GET /api/v2/users without pagination\n3. Gateway times out before response is sent\n\nExpected: Paginated response within timeout window\nActual: 504 Gateway Timeout\n\nThis is blocking the user export feature in the admin dashboard." },
+      { id: 102, title: "Add rate limiting to public endpoints", status: "open", assignee: "james", labels: ["feature"], body: "We need to implement rate limiting on all public API endpoints to prevent abuse.\n\nRequirements:\n- 100 requests per minute per IP for unauthenticated endpoints\n- 1000 requests per minute for authenticated users\n- Return 429 status with Retry-After header\n\nSuggested approach: Use Redis-backed sliding window counter." },
+      { id: 103, title: "Database connection pool exhaustion under load", status: "open", assignee: "maria", labels: ["bug"], body: "Under heavy load (>500 concurrent requests), the database connection pool gets exhausted causing timeout errors across all services.\n\nLogs show:\n  ERROR: pool exhausted, timeout waiting for connection\n  ERROR: query timeout after 5000ms\n\nThis is likely related to the connection leak in the transaction middleware that was partially fixed in v2.3.1.\n\nNeeds investigation of the connection lifecycle in the ORM layer." },
+      { id: 104, title: "Implement webhook delivery retry logic", status: "open", assignee: "sarah", labels: ["feature"], body: "When webhook delivery fails, we currently drop the event. We need:\n\n- Exponential backoff retry (1min, 5min, 30min, 2hr, 24hr)\n- Dead letter queue for permanently failed deliveries\n- Dashboard showing delivery status and retry history\n- Configurable retry policy per webhook endpoint" },
+      { id: 105, title: "Fix CORS headers for preflight requests", status: "open", assignee: "maria", labels: ["bug"], body: "OPTIONS preflight requests are returning 405 Method Not Allowed instead of proper CORS headers.\n\nThis causes the frontend to fail on all cross-origin API calls from the new subdomain.\n\nFix: Add OPTIONS handler to the middleware chain before auth middleware." },
+      { id: 106, title: "Update API documentation for v2.5", status: "open", assignee: "alex", labels: ["docs"], body: "The API docs are outdated after the v2.5 release. Need to update:\n\n- New /webhooks endpoints\n- Updated /users response schema\n- Deprecated /legacy/* endpoints\n- New authentication flow documentation" },
+      { id: 107, title: "Cache invalidation timeout causing stale data", status: "open", assignee: "maria", labels: ["bug"], body: "Redis cache entries for user profiles have a TTL of 24 hours, but when a user updates their profile, the cache isn't invalidated immediately.\n\nThis causes a timeout-like delay where users see stale data for up to 24 hours after making changes.\n\nNeed to implement cache-aside pattern with immediate invalidation on write operations." },
+      { id: 108, title: "Add GraphQL support for mobile clients", status: "open", assignee: "james", labels: ["feature"], body: "Mobile team has requested a GraphQL endpoint to reduce over-fetching on cellular connections.\n\nScope:\n- Schema for User, Post, Comment entities\n- Subscriptions for real-time updates\n- DataLoader for N+1 query prevention\n- Authentication via existing JWT middleware" },
+      { id: 109, title: "Memory leak in WebSocket connection handler", status: "closed", assignee: "maria", labels: ["bug"], body: "Fixed in v2.4.2. The WebSocket handler wasn't properly cleaning up event listeners on disconnect, causing a gradual memory leak." },
+      { id: 110, title: "Migrate from REST to gRPC for internal services", status: "open", assignee: "sarah", labels: ["feature"], body: "For internal service-to-service communication, we should migrate from REST to gRPC for:\n- Better performance (binary protocol)\n- Strict contract via protobuf\n- Bi-directional streaming support\n\nStart with the notification service as a pilot." }
+    ];
+
+    let currentIssue = null;
+
+    function renderIssues() {
+      const status = document.getElementById('status-filter').value;
+      const assignee = document.getElementById('assignee-filter').value;
+      const label = document.getElementById('label-filter').value;
+
+      let filtered = issues.filter(i => {
+        if (status && i.status !== status) return false;
+        if (assignee && i.assignee !== assignee) return false;
+        if (label && !i.labels.includes(label)) return false;
+        return true;
+      });
+
+      document.getElementById('issue-count').textContent = `${filtered.length} issues`;
+
+      document.getElementById('issue-list').innerHTML = filtered.map(i => `
+        <div class="issue-item" onclick="openIssue(${i.id})" role="listitem" aria-label="Issue #${i.id}: ${i.title}">
+          <div class="issue-icon ${i.status}"></div>
+          <div class="issue-content">
+            <div class="title">${i.title}</div>
+            <div class="meta">#${i.id} opened by ${i.assignee} &bull; ${i.status}</div>
+            <div class="issue-labels">
+              ${i.labels.map(l => `<span class="label ${l}">${l}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openIssue(id) {
+      currentIssue = issues.find(i => i.id === id);
+      document.getElementById('issue-list-page').style.display = 'none';
+      const detail = document.getElementById('issue-detail');
+      detail.style.display = 'block';
+      document.getElementById('detail-title').textContent = `${currentIssue.title} #${currentIssue.id}`;
+      document.getElementById('detail-meta').textContent = `Opened by ${currentIssue.assignee} \u2022 ${currentIssue.status}`;
+      document.getElementById('detail-labels').innerHTML = currentIssue.labels.map(l => `<span class="label ${l}">${l}</span>`).join('');
+      document.getElementById('detail-body').textContent = currentIssue.body;
+      document.getElementById('label-success').style.display = 'none';
+      document.getElementById('add-label-select').value = '';
+    }
+
+    function backToList() {
+      document.getElementById('issue-list-page').style.display = 'block';
+      document.getElementById('issue-detail').style.display = 'none';
+      renderIssues();
+    }
+
+    function addLabel() {
+      const label = document.getElementById('add-label-select').value;
+      if (!label || !currentIssue) return;
+      if (!currentIssue.labels.includes(label)) {
+        currentIssue.labels.push(label);
+      }
+      document.getElementById('detail-labels').innerHTML = currentIssue.labels.map(l => `<span class="label ${l}">${l}</span>`).join('');
+      const msg = document.getElementById('label-success');
+      msg.textContent = `Label "${label}" added to issue #${currentIssue.id}`;
+      msg.style.display = 'block';
+      msg.dataset.issueId = currentIssue.id;
+      msg.dataset.label = label;
+    }
+
+    renderIssues();
+  </script>
+</body>
+</html>

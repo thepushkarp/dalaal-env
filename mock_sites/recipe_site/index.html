@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecipeHub - Find Recipes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fafafa; }
+    header { background: #e65100; color: white; padding: 16px 24px; display: flex; align-items: center; gap: 16px; }
+    header h1 { font-size: 22px; }
+    .search-area { max-width: 800px; margin: 24px auto; display: flex; gap: 8px; padding: 0 16px; }
+    .search-area input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+    .search-area button { padding: 12px 24px; background: #e65100; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
+    .filters { max-width: 800px; margin: 0 auto 16px; padding: 0 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .filters select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .filters label { font-size: 14px; display: flex; align-items: center; gap: 4px; }
+    .results { max-width: 800px; margin: 0 auto; padding: 0 16px; }
+    .recipe-card { display: flex; background: white; border-radius: 8px; overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; }
+    .recipe-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .recipe-img { width: 180px; min-height: 140px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .recipe-info { padding: 16px; flex: 1; }
+    .recipe-info h3 { margin-bottom: 4px; font-size: 17px; }
+    .recipe-info .meta { font-size: 13px; color: #888; margin-bottom: 8px; }
+    .recipe-info .stars { color: #ff9800; font-size: 14px; }
+    .recipe-info .reviews { color: #888; font-size: 13px; margin-left: 4px; }
+    .recipe-info .tags { display: flex; gap: 6px; margin-top: 8px; }
+    .recipe-info .tag { padding: 2px 8px; background: #fff3e0; color: #e65100; border-radius: 12px; font-size: 12px; }
+    /* Detail page */
+    #recipe-detail { display: none; max-width: 800px; margin: 24px auto; background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #recipe-detail h2 { margin-bottom: 8px; }
+    #recipe-detail .detail-meta { font-size: 14px; color: #888; margin-bottom: 16px; }
+    #recipe-detail .section-title { font-size: 16px; font-weight: bold; margin: 16px 0 8px; }
+    #recipe-detail ul { padding-left: 20px; }
+    #recipe-detail li { margin-bottom: 4px; font-size: 14px; }
+    #recipe-detail ol { padding-left: 20px; }
+    #recipe-detail ol li { margin-bottom: 8px; font-size: 14px; line-height: 1.5; }
+    .back-btn { padding: 8px 16px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px; margin-bottom: 16px; }
+    #save-success { display: none; margin-top: 12px; padding: 10px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 14px; }
+    .save-btn { padding: 8px 16px; background: #e65100; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <header><h1>RecipeHub</h1></header>
+
+  <div id="search-page">
+    <div class="search-area">
+      <input type="text" id="search-input" placeholder="Search recipes..." aria-label="Search recipes">
+      <button onclick="searchRecipes()" aria-label="Search">Search</button>
+    </div>
+    <div class="filters">
+      <select id="diet-filter" aria-label="Diet filter" onchange="searchRecipes()">
+        <option value="">All Diets</option>
+        <option value="vegetarian">Vegetarian</option>
+        <option value="vegan">Vegan</option>
+        <option value="gluten-free">Gluten Free</option>
+      </select>
+      <select id="sort-filter" aria-label="Sort by" onchange="searchRecipes()">
+        <option value="rating">Highest Rated</option>
+        <option value="reviews">Most Reviews</option>
+        <option value="time">Quickest</option>
+      </select>
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div id="recipe-detail">
+    <button class="back-btn" onclick="backToSearch()" aria-label="Back to search results">Back to Results</button>
+    <h2 id="detail-title"></h2>
+    <div class="detail-meta" id="detail-meta"></div>
+    <div class="section-title">Ingredients</div>
+    <ul id="detail-ingredients"></ul>
+    <div class="section-title">Instructions</div>
+    <ol id="detail-instructions"></ol>
+    <button class="save-btn" onclick="saveRecipe()" aria-label="Save to favorites">Save to Favorites</button>
+    <div id="save-success">Recipe saved to favorites!</div>
+  </div>
+
+  <script>
+    const recipes = [
+      { id: 1, name: "Classic Vegetarian Lasagna", emoji: "\ud83c\udf5d", time: "75 min", rating: 4.7, reviews: 234, diet: ["vegetarian"], tags: ["Italian", "Comfort Food"],
+        ingredients: ["12 lasagna noodles", "2 cups ricotta cheese", "3 cups marinara sauce", "2 cups mozzarella, shredded", "1 cup parmesan, grated", "2 cups spinach", "1 cup mushrooms, sliced", "2 eggs", "1 tsp garlic powder", "Salt and pepper to taste"],
+        instructions: ["Preheat oven to 375\u00b0F (190\u00b0C).", "Cook lasagna noodles according to package directions. Drain.", "Mix ricotta, eggs, half the parmesan, garlic powder, salt and pepper.", "Layer: sauce, noodles, ricotta mixture, spinach, mushrooms, mozzarella. Repeat 3 times.", "Top with remaining sauce, mozzarella, and parmesan.", "Cover with foil and bake 25 minutes. Remove foil, bake 15 more minutes.", "Let rest 10 minutes before serving."]
+      },
+      { id: 2, name: "Thai Green Curry", emoji: "\ud83c\udf5b", time: "35 min", rating: 4.5, reviews: 189, diet: ["gluten-free"], tags: ["Thai", "Spicy"],
+        ingredients: ["2 tbsp green curry paste", "1 can coconut milk", "1 lb chicken breast, sliced", "1 cup bamboo shoots", "1 bell pepper, sliced", "1 cup Thai basil", "2 tbsp fish sauce", "1 tbsp brown sugar", "Jasmine rice for serving"],
+        instructions: ["Heat coconut cream (thick part) in a pan until oil separates.", "Add curry paste, stir 2 minutes.", "Add chicken, cook until no longer pink.", "Pour in remaining coconut milk, bamboo shoots, bell pepper.", "Simmer 15 minutes.", "Season with fish sauce and sugar.", "Top with Thai basil and serve over jasmine rice."]
+      },
+      { id: 3, name: "Vegan Buddha Bowl", emoji: "\ud83e\udd57", time: "25 min", rating: 4.8, reviews: 312, diet: ["vegan", "gluten-free"], tags: ["Healthy", "Quick"],
+        ingredients: ["1 cup quinoa, cooked", "1 cup chickpeas, roasted", "1 avocado, sliced", "1 cup kale, massaged", "1/2 cup shredded carrots", "1/2 cup edamame", "2 tbsp tahini", "1 tbsp lemon juice", "1 tbsp soy sauce", "1 tsp maple syrup"],
+        instructions: ["Cook quinoa according to package directions.", "Roast chickpeas at 400\u00b0F with olive oil and spices for 20 minutes.", "Prepare tahini dressing: whisk tahini, lemon juice, soy sauce, maple syrup, and water.", "Arrange quinoa, chickpeas, avocado, kale, carrots, and edamame in a bowl.", "Drizzle with tahini dressing and serve."]
+      },
+      { id: 4, name: "Mushroom Risotto", emoji: "\ud83c\udf44", time: "45 min", rating: 4.6, reviews: 156, diet: ["vegetarian", "gluten-free"], tags: ["Italian", "Comfort Food"],
+        ingredients: ["1.5 cups arborio rice", "4 cups vegetable broth, warm", "8 oz mixed mushrooms, sliced", "1/2 cup white wine", "1/2 cup parmesan, grated", "2 tbsp butter", "1 onion, diced", "3 cloves garlic, minced", "Fresh thyme", "Salt and pepper"],
+        instructions: ["Saut\u00e9 mushrooms in butter until golden. Set aside.", "Saut\u00e9 onion and garlic until soft.", "Add rice, toast 2 minutes.", "Add wine, stir until absorbed.", "Add broth one ladle at a time, stirring constantly, until rice is creamy (about 20 minutes).", "Stir in mushrooms, parmesan, and butter.", "Season and serve with fresh thyme."]
+      },
+      { id: 5, name: "Spicy Black Bean Tacos", emoji: "\ud83c\udf2e", time: "20 min", rating: 4.4, reviews: 98, diet: ["vegan"], tags: ["Mexican", "Quick"],
+        ingredients: ["2 cans black beans", "1 tbsp cumin", "1 tsp chili powder", "8 corn tortillas", "1 cup salsa", "1 avocado", "1/4 cup cilantro", "Lime wedges", "Pickled onions"],
+        instructions: ["Heat black beans with cumin, chili powder, and salt.", "Warm tortillas in a dry skillet.", "Fill tortillas with beans, salsa, avocado slices.", "Top with cilantro and pickled onions.", "Serve with lime wedges."]
+      },
+      { id: 6, name: "Chicken Parmesan", emoji: "\ud83c\udf57", time: "40 min", rating: 4.3, reviews: 267, diet: [], tags: ["Italian", "Classic"],
+        ingredients: ["4 chicken breasts", "1 cup breadcrumbs", "1/2 cup parmesan", "2 eggs", "2 cups marinara", "1 cup mozzarella", "Fresh basil", "Salt and pepper", "Olive oil"],
+        instructions: ["Pound chicken to even thickness.", "Dip in beaten eggs, then breadcrumb-parmesan mixture.", "Pan-fry in olive oil until golden on both sides.", "Place in baking dish, top with marinara and mozzarella.", "Bake at 400\u00b0F for 15 minutes until cheese melts.", "Garnish with fresh basil."]
+      }
+    ];
+
+    let currentRecipe = null;
+
+    function searchRecipes() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const diet = document.getElementById('diet-filter').value;
+      const sort = document.getElementById('sort-filter').value;
+
+      let filtered = recipes.filter(r => {
+        if (query && !r.name.toLowerCase().includes(query) && !r.tags.some(t => t.toLowerCase().includes(query))) return false;
+        if (diet && !r.diet.includes(diet)) return false;
+        return true;
+      });
+
+      if (sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+      else if (sort === 'reviews') filtered.sort((a, b) => b.reviews - a.reviews);
+      else if (sort === 'time') filtered.sort((a, b) => parseInt(a.time) - parseInt(b.time));
+
+      renderResults(filtered);
+    }
+
+    function renderResults(list) {
+      document.getElementById('results').innerHTML = list.map(r => `
+        <div class="recipe-card" onclick="openRecipe(${r.id})" role="article" aria-label="${r.name}">
+          <div class="recipe-img">${r.emoji}</div>
+          <div class="recipe-info">
+            <h3>${r.name}</h3>
+            <div class="meta">${r.time} &bull; ${r.diet.length ? r.diet.join(', ') : 'No dietary restrictions'}</div>
+            <div>
+              <span class="stars">${'\u2605'.repeat(Math.floor(r.rating))}${r.rating % 1 >= 0.5 ? '\u00bd' : ''}</span>
+              <span class="stars">${r.rating}</span>
+              <span class="reviews">(${r.reviews} reviews)</span>
+            </div>
+            <div class="tags">${r.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openRecipe(id) {
+      currentRecipe = recipes.find(r => r.id === id);
+      document.getElementById('search-page').style.display = 'none';
+      const detail = document.getElementById('recipe-detail');
+      detail.style.display = 'block';
+      document.getElementById('detail-title').textContent = currentRecipe.name;
+      document.getElementById('detail-meta').textContent = `${currentRecipe.time} \u2022 ${currentRecipe.rating} \u2605 (${currentRecipe.reviews} reviews) \u2022 ${currentRecipe.diet.join(', ') || 'No restrictions'}`;
+      document.getElementById('detail-ingredients').innerHTML = currentRecipe.ingredients.map(i => `<li>${i}</li>`).join('');
+      document.getElementById('detail-instructions').innerHTML = currentRecipe.instructions.map(i => `<li>${i}</li>`).join('');
+      document.getElementById('save-success').style.display = 'none';
+    }
+
+    function backToSearch() {
+      document.getElementById('search-page').style.display = 'block';
+      document.getElementById('recipe-detail').style.display = 'none';
+    }
+
+    function saveRecipe() {
+      const msg = document.getElementById('save-success');
+      msg.style.display = 'block';
+      msg.dataset.recipeId = currentRecipe.id;
+      msg.dataset.recipeName = currentRecipe.name;
+    }
+
+    // Show all recipes on load
+    searchRecipes();
+
+    document.getElementById('search-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') searchRecipes();
+    });
+  </script>
+</body>
+</html>

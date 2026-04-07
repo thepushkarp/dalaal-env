@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Registration Renewal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f0f2f5; }
+    .header { background: #1a237e; color: white; padding: 16px 24px; }
+    .header h1 { font-size: 20px; }
+    .header p { font-size: 13px; opacity: 0.8; }
+    .wizard { max-width: 600px; margin: 24px auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+    .steps-bar { display: flex; background: #e8eaf6; }
+    .steps-bar .step-indicator { flex: 1; text-align: center; padding: 12px; font-size: 13px; color: #666; position: relative; }
+    .steps-bar .step-indicator.active { color: #1a237e; font-weight: bold; background: #c5cae9; }
+    .steps-bar .step-indicator.done { color: #2e7d32; }
+    .step-content { padding: 24px; }
+    .step-content h2 { font-size: 18px; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; margin-bottom: 4px; font-weight: 500; }
+    .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+    .info-row .label { color: #666; }
+    .radio-group { display: flex; flex-direction: column; gap: 12px; }
+    .radio-option { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+    .radio-option:hover { background: #f5f5f5; }
+    .radio-option input { width: 18px; height: 18px; }
+    .radio-option .price { color: #1a237e; font-weight: bold; margin-left: auto; }
+    .btn-row { display: flex; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #eee; }
+    .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; }
+    .btn-primary { background: #1a237e; color: white; }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .address-display { background: #f5f5f5; padding: 12px; border-radius: 4px; font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+    #success-message { display: none; text-align: center; padding: 32px; }
+    #success-message h2 { color: #2e7d32; margin-bottom: 12px; }
+    .confirmation-box { background: #f5f5f5; padding: 16px; border-radius: 4px; text-align: left; margin-top: 16px; }
+    .confirmation-box p { margin: 4px 0; font-size: 14px; }
+    .step { display: none; }
+    .step.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Department of Motor Vehicles</h1>
+    <p>Online Services Portal</p>
+  </div>
+
+  <div class="wizard">
+    <div class="steps-bar">
+      <div class="step-indicator active" id="ind-1">1. Lookup</div>
+      <div class="step-indicator" id="ind-2">2. Verify</div>
+      <div class="step-indicator" id="ind-3">3. Renewal</div>
+      <div class="step-indicator" id="ind-4">4. Confirm</div>
+    </div>
+
+    <!-- Step 1: Plate Lookup -->
+    <div class="step active" id="step-1">
+      <div class="step-content">
+        <h2>Vehicle Lookup</h2>
+        <p style="font-size:14px;color:#666;margin-bottom:16px">Enter your license plate number to begin the renewal process.</p>
+        <div class="form-group">
+          <label for="plate-number">License Plate Number</label>
+          <input type="text" id="plate-number" placeholder="e.g. ABC1234" aria-label="License plate number" style="text-transform:uppercase">
+        </div>
+      </div>
+      <div class="btn-row">
+        <div></div>
+        <button class="btn btn-primary" onclick="lookupPlate()" aria-label="Look up vehicle">Look Up</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Verify Info -->
+    <div class="step" id="step-2">
+      <div class="step-content">
+        <h2>Verify Vehicle Information</h2>
+        <div class="info-row"><span class="label">Plate Number</span><span id="v-plate">ABC1234</span></div>
+        <div class="info-row"><span class="label">Make</span><span id="v-make">Toyota</span></div>
+        <div class="info-row"><span class="label">Model</span><span id="v-model">Camry</span></div>
+        <div class="info-row"><span class="label">Year</span><span id="v-year">2021</span></div>
+        <div class="info-row"><span class="label">VIN</span><span id="v-vin">1HGBH41JXMN109186</span></div>
+        <h3 style="margin:16px 0 8px;font-size:15px">Registered Address</h3>
+        <div class="address-display" id="v-address">742 Evergreen Terrace<br>Springfield, IL 62704</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="confirmAddress()" aria-label="Confirm address is correct">Address is Correct</button>
+          <button class="btn btn-secondary" onclick="showUpdateAddress()" aria-label="Update address">Update Address</button>
+        </div>
+        <div id="update-address-form" style="display:none;margin-top:16px">
+          <div class="form-group">
+            <label for="new-address">New Street Address</label>
+            <input type="text" id="new-address" aria-label="New street address">
+          </div>
+          <div class="form-group">
+            <label for="new-city">City</label>
+            <input type="text" id="new-city" aria-label="New city">
+          </div>
+          <div style="display:flex;gap:12px">
+            <div class="form-group" style="flex:1">
+              <label for="new-state">State</label>
+              <input type="text" id="new-state" aria-label="New state">
+            </div>
+            <div class="form-group" style="flex:1">
+              <label for="new-zip">ZIP Code</label>
+              <input type="text" id="new-zip" aria-label="New ZIP code">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveNewAddress()" aria-label="Save new address">Save & Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Renewal Options -->
+    <div class="step" id="step-3">
+      <div class="step-content">
+        <h2>Select Renewal Period</h2>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="renewal" value="1" aria-label="1-year renewal at $85">
+            <div>
+              <strong>1-Year Renewal</strong><br>
+              <span style="font-size:13px;color:#666">Valid through April 2027</span>
+            </div>
+            <span class="price">$85.00</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="renewal" value="2" aria-label="2-year renewal at $150">
+            <div>
+              <strong>2-Year Renewal</strong><br>
+              <span style="font-size:13px;color:#666">Valid through April 2028 — Save $20</span>
+            </div>
+            <span class="price">$150.00</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="renewal" value="4" aria-label="4-year renewal at $280">
+            <div>
+              <strong>4-Year Renewal</strong><br>
+              <span style="font-size:13px;color:#666">Valid through April 2030 — Save $60</span>
+            </div>
+            <span class="price">$280.00</span>
+          </label>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(2)" aria-label="Go back">Back</button>
+        <button class="btn btn-primary" onclick="goToConfirm()" aria-label="Continue to confirmation">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Confirmation -->
+    <div class="step" id="step-4">
+      <div class="step-content">
+        <h2>Review & Submit</h2>
+        <div id="confirm-summary"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(3)" aria-label="Go back">Back</button>
+        <button class="btn btn-primary" onclick="submitRenewal()" aria-label="Submit renewal">Submit Renewal</button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="success-message">
+      <h2>Renewal Submitted!</h2>
+      <p>Your vehicle registration renewal has been processed.</p>
+      <div class="confirmation-box" id="final-details"></div>
+    </div>
+  </div>
+
+  <script>
+    const vehicle = {
+      plate: "ABC1234", make: "Toyota", model: "Camry", year: 2021,
+      vin: "1HGBH41JXMN109186",
+      address: "742 Evergreen Terrace", city: "Springfield", state: "IL", zip: "62704"
+    };
+    let addressConfirmed = false;
+    let renewalYears = null;
+
+    function lookupPlate() {
+      const plate = document.getElementById('plate-number').value.trim().toUpperCase();
+      if (!plate) return;
+      vehicle.plate = plate;
+      document.getElementById('v-plate').textContent = vehicle.plate;
+      goStep(2);
+    }
+
+    function goStep(n) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-' + n).classList.add('active');
+      document.querySelectorAll('.step-indicator').forEach((el, i) => {
+        el.classList.remove('active', 'done');
+        if (i + 1 === n) el.classList.add('active');
+        if (i + 1 < n) el.classList.add('done');
+      });
+    }
+
+    function confirmAddress() {
+      addressConfirmed = true;
+      goStep(3);
+    }
+
+    function showUpdateAddress() {
+      document.getElementById('update-address-form').style.display = 'block';
+    }
+
+    function saveNewAddress() {
+      vehicle.address = document.getElementById('new-address').value;
+      vehicle.city = document.getElementById('new-city').value;
+      vehicle.state = document.getElementById('new-state').value;
+      vehicle.zip = document.getElementById('new-zip').value;
+      addressConfirmed = true;
+      goStep(3);
+    }
+
+    function goToConfirm() {
+      const selected = document.querySelector('input[name="renewal"]:checked');
+      if (!selected) return;
+      renewalYears = parseInt(selected.value);
+      const prices = { 1: 85, 2: 150, 4: 280 };
+      const price = prices[renewalYears];
+      document.getElementById('confirm-summary').innerHTML = `
+        <div class="info-row"><span class="label">Vehicle</span><span>${vehicle.year} ${vehicle.make} ${vehicle.model}</span></div>
+        <div class="info-row"><span class="label">Plate</span><span>${vehicle.plate}</span></div>
+        <div class="info-row"><span class="label">Address</span><span>${vehicle.address}, ${vehicle.city}, ${vehicle.state} ${vehicle.zip}</span></div>
+        <div class="info-row"><span class="label">Renewal Period</span><span>${renewalYears}-Year</span></div>
+        <div class="info-row"><span class="label">Total Due</span><span style="font-weight:bold;color:#1a237e">$${price}.00</span></div>
+      `;
+      goStep(4);
+    }
+
+    function submitRenewal() {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.querySelector('.steps-bar').style.display = 'none';
+      document.querySelector('.btn-row')?.remove();
+      const msg = document.getElementById('success-message');
+      msg.style.display = 'block';
+      const prices = { 1: 85, 2: 150, 4: 280 };
+      document.getElementById('final-details').innerHTML = `
+        <p><strong>Plate:</strong> ${vehicle.plate}</p>
+        <p><strong>Vehicle:</strong> ${vehicle.year} ${vehicle.make} ${vehicle.model}</p>
+        <p><strong>Renewal:</strong> ${renewalYears}-Year</p>
+        <p><strong>Amount:</strong> $${prices[renewalYears]}.00</p>
+        <p><strong>Confirmation #:</strong> DMV-${Date.now().toString(36).toUpperCase()}</p>
+      `;
+      msg.dataset.plate = vehicle.plate;
+      msg.dataset.years = renewalYears;
+      msg.dataset.addressConfirmed = addressConfirmed;
+    }
+  </script>
+</body>
+</html>

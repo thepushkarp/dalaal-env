@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebMail - Inbox</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; }
+    .app { display: flex; height: 100vh; }
+    .sidebar { width: 200px; background: #1a1a2e; color: white; padding: 16px; }
+    .sidebar h2 { font-size: 18px; margin-bottom: 16px; }
+    .sidebar button { width: 100%; padding: 10px; background: #e94560; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 12px; font-size: 14px; }
+    .sidebar .nav-item { padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; font-size: 14px; }
+    .sidebar .nav-item:hover, .sidebar .nav-item.active { background: rgba(255,255,255,0.1); }
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .toolbar { padding: 12px 20px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; gap: 8px; align-items: center; }
+    .toolbar input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 14px; }
+    .email-list { flex: 1; overflow-y: auto; }
+    .email-item { display: flex; align-items: center; padding: 12px 20px; border-bottom: 1px solid #eee; cursor: pointer; background: white; }
+    .email-item:hover { background: #f0f4ff; }
+    .email-item.unread { font-weight: bold; }
+    .email-item .sender { width: 180px; font-size: 14px; }
+    .email-item .subject { flex: 1; font-size: 14px; }
+    .email-item .date { width: 100px; font-size: 12px; color: #888; text-align: right; }
+    .email-item .checkbox { margin-right: 12px; width: 18px; height: 18px; }
+    /* Email detail view */
+    #email-detail { display: none; flex: 1; background: white; padding: 24px; overflow-y: auto; }
+    #email-detail .email-header { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 16px; }
+    #email-detail .email-header h2 { margin-bottom: 8px; }
+    #email-detail .email-header .meta { color: #666; font-size: 14px; }
+    #email-detail .email-body { line-height: 1.6; font-size: 15px; }
+    #email-detail .actions { margin-top: 20px; display: flex; gap: 8px; }
+    #email-detail .actions button { padding: 8px 16px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px; }
+    #email-detail .actions button:hover { background: #f0f0f0; }
+    /* Forward dialog */
+    #forward-dialog { display: none; margin-top: 16px; padding: 16px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; }
+    #forward-dialog label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px; }
+    #forward-dialog input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-bottom: 12px; }
+    #forward-dialog button { padding: 8px 16px; background: #1976D2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    /* Success */
+    #forward-success { display: none; margin-top: 12px; padding: 12px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <h2>WebMail</h2>
+      <button aria-label="Compose new email">Compose</button>
+      <div class="nav-item active">Inbox (6)</div>
+      <div class="nav-item">Sent</div>
+      <div class="nav-item">Drafts</div>
+      <div class="nav-item">Trash</div>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <input type="text" placeholder="Search emails..." aria-label="Search emails">
+      </div>
+      <div class="email-list" id="email-list"></div>
+      <div id="email-detail">
+        <div class="email-header">
+          <h2 id="detail-subject"></h2>
+          <div class="meta">
+            <span>From: <strong id="detail-from"></strong></span> &bull;
+            <span id="detail-date"></span>
+          </div>
+        </div>
+        <div class="email-body" id="detail-body"></div>
+        <div class="actions">
+          <button onclick="showReply()" aria-label="Reply">Reply</button>
+          <button onclick="showForward()" aria-label="Forward">Forward</button>
+          <button onclick="deleteEmail()" aria-label="Delete">Delete</button>
+          <button onclick="backToList()" aria-label="Back to inbox">Back</button>
+        </div>
+        <div id="forward-dialog">
+          <label for="forward-to">To:</label>
+          <input type="email" id="forward-to" placeholder="recipient@example.com" aria-label="Forward to">
+          <button onclick="sendForward()" aria-label="Send forward">Send</button>
+        </div>
+        <div id="forward-success">Email forwarded successfully!</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const emails = [
+      { id: 1, from: "Alice Johnson", email: "alice@company.com", subject: "Q3 Budget Review", date: "Apr 7", unread: true, body: "Hi team,\n\nPlease review the Q3 budget document I've attached. We need to finalize the numbers by Friday.\n\nKey points:\n- Marketing budget increased by 15%\n- Engineering headcount: 3 new positions\n- Infrastructure costs are over budget\n\nLet me know your thoughts.\n\nBest,\nAlice" },
+      { id: 2, from: "Bob Martinez", email: "bob@company.com", subject: "Meeting Notes - Sprint Planning", date: "Apr 7", unread: true, body: "Hey everyone,\n\nHere are the notes from today's sprint planning meeting:\n\n1. User authentication redesign - Priority: High\n2. Database migration to PostgreSQL - Priority: Medium\n3. Fix timeout issues on the API gateway - Priority: Critical\n4. Update documentation for v2.0 - Priority: Low\n\nPlease update your tickets accordingly.\n\nThanks,\nBob" },
+      { id: 3, from: "Carol White", email: "carol@external.com", subject: "Partnership Proposal", date: "Apr 6", unread: false, body: "Dear team,\n\nI'm reaching out from TechCorp to discuss a potential partnership opportunity. We believe our platforms complement each other well.\n\nWould you be available for a call next week?\n\nRegards,\nCarol White\nBusiness Development, TechCorp" },
+      { id: 4, from: "David Chen", email: "david@company.com", subject: "Server Downtime Notice", date: "Apr 6", unread: true, body: "Team,\n\nScheduled maintenance window:\n- Date: Saturday, April 12\n- Time: 2:00 AM - 6:00 AM UTC\n- Affected: Production servers, staging environment\n\nPlease plan accordingly and ensure no deployments during this window.\n\nDavid\nDevOps Team" },
+      { id: 5, from: "Emma Davis", email: "emma@company.com", subject: "Team Lunch Friday", date: "Apr 5", unread: false, body: "Hi all!\n\nLet's do a team lunch this Friday at the Italian place on 5th Street. I've made a reservation for 12:30 PM.\n\nPlease let me know if you have any dietary restrictions.\n\nCheers,\nEmma" },
+      { id: 6, from: "Frank Wilson", email: "frank@vendor.com", subject: "Invoice #4521 - Overdue", date: "Apr 4", unread: true, body: "Hello,\n\nThis is a reminder that Invoice #4521 for $12,500 is now 15 days overdue. Please process the payment at your earliest convenience.\n\nIf payment has already been sent, please disregard this notice.\n\nThank you,\nFrank Wilson\nAccounts Receivable" }
+    ];
+
+    let currentEmail = null;
+
+    function renderList() {
+      const list = document.getElementById('email-list');
+      list.innerHTML = emails.map(e => `
+        <div class="email-item ${e.unread ? 'unread' : ''}" onclick="openEmail(${e.id})" role="listitem" aria-label="Email from ${e.from}: ${e.subject}">
+          <input type="checkbox" class="checkbox" onclick="event.stopPropagation()" aria-label="Select email from ${e.from}">
+          <div class="sender">${e.from}</div>
+          <div class="subject">${e.subject}</div>
+          <div class="date">${e.date}</div>
+        </div>
+      `).join('');
+    }
+
+    function openEmail(id) {
+      currentEmail = emails.find(e => e.id === id);
+      if (!currentEmail) return;
+      currentEmail.unread = false;
+      document.getElementById('email-list').style.display = 'none';
+      document.getElementById('email-detail').style.display = 'block';
+      document.getElementById('detail-subject').textContent = currentEmail.subject;
+      document.getElementById('detail-from').textContent = `${currentEmail.from} <${currentEmail.email}>`;
+      document.getElementById('detail-date').textContent = currentEmail.date;
+      document.getElementById('detail-body').textContent = currentEmail.body;
+      document.getElementById('forward-dialog').style.display = 'none';
+      document.getElementById('forward-success').style.display = 'none';
+    }
+
+    function backToList() {
+      document.getElementById('email-list').style.display = 'block';
+      document.getElementById('email-detail').style.display = 'none';
+      renderList();
+    }
+
+    function showForward() {
+      document.getElementById('forward-dialog').style.display = 'block';
+      document.getElementById('forward-to').value = '';
+      document.getElementById('forward-to').focus();
+    }
+
+    function showReply() {}
+    function deleteEmail() {}
+
+    function sendForward() {
+      const to = document.getElementById('forward-to').value.trim();
+      if (!to) return;
+      document.getElementById('forward-dialog').style.display = 'none';
+      const msg = document.getElementById('forward-success');
+      msg.textContent = `Email "${currentEmail.subject}" forwarded to ${to} successfully!`;
+      msg.style.display = 'block';
+      msg.dataset.to = to;
+      msg.dataset.subject = currentEmail.subject;
+      msg.dataset.from = currentEmail.from;
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
