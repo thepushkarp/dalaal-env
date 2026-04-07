@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f0f2f5; }
+    .card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+    h1 { margin-bottom: 24px; color: #333; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; color: #555; font-weight: 500; }
+    input[type="text"], input[type="email"], input[type="tel"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    button[type="submit"] { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 8px; }
+    .error { color: #f44336; font-size: 13px; margin-top: 4px; display: none; }
+    #success-message { display: none; text-align: center; }
+    #success-message h2 { color: #4CAF50; margin-bottom: 12px; }
+    #success-message .details { background: #f5f5f5; padding: 16px; border-radius: 4px; text-align: left; margin-top: 16px; }
+    #success-message .details p { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="form-container">
+      <h1>Create Account</h1>
+      <form onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="fullname">Full Name</label>
+          <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required aria-label="Full Name">
+          <div class="error" id="name-error">Please enter your name</div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required aria-label="Email Address">
+          <div class="error" id="email-error">Please enter a valid email</div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="Enter phone number" aria-label="Phone Number">
+        </div>
+        <div class="form-group">
+          <label for="country">Country</label>
+          <select id="country" name="country" required aria-label="Country">
+            <option value="">Select a country</option>
+            <option value="US">United States</option>
+            <option value="UK">United Kingdom</option>
+            <option value="CA">Canada</option>
+            <option value="DE">Germany</option>
+            <option value="IN">India</option>
+            <option value="JP">Japan</option>
+          </select>
+        </div>
+        <button type="submit">Create Account</button>
+      </form>
+    </div>
+    <div id="success-message">
+      <h2>Account Created!</h2>
+      <p>Your account has been successfully created.</p>
+      <div class="details">
+        <p><strong>Name:</strong> <span id="show-name"></span></p>
+        <p><strong>Email:</strong> <span id="show-email"></span></p>
+        <p><strong>Country:</strong> <span id="show-country"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('fullname').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const country = document.getElementById('country').value;
+
+      let valid = true;
+      if (!name) { document.getElementById('name-error').style.display = 'block'; valid = false; }
+      else { document.getElementById('name-error').style.display = 'none'; }
+      if (!email || !email.includes('@')) { document.getElementById('email-error').style.display = 'block'; valid = false; }
+      else { document.getElementById('email-error').style.display = 'none'; }
+
+      if (!valid || !country) return;
+
+      document.getElementById('show-name').textContent = name;
+      document.getElementById('show-email').textContent = email;
+      document.getElementById('show-country').textContent = document.getElementById('country').options[document.getElementById('country').selectedIndex].text;
+
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('success-message').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+    h1 { margin-bottom: 20px; color: #333; }
+    .add-form { display: flex; gap: 8px; margin-bottom: 20px; }
+    .add-form input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    .add-form button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    .todo-list { list-style: none; }
+    .todo-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: white; margin-bottom: 8px; border-radius: 4px; border: 1px solid #e0e0e0; }
+    .todo-item.completed .todo-text { text-decoration: line-through; color: #999; }
+    .todo-text { flex: 1; font-size: 16px; }
+    .todo-item button { padding: 6px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .todo-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>My Todo List</h1>
+  <div class="add-form">
+    <input type="text" id="todo-input" placeholder="Add a new todo..." aria-label="Add a new todo">
+    <button id="add-btn" onclick="addTodo()">Add</button>
+  </div>
+  <ul class="todo-list" id="todo-list" role="list">
+    <li class="todo-item" role="listitem">
+      <input type="checkbox" aria-label="Complete: Walk the dog" onchange="toggleTodo(this)">
+      <span class="todo-text">Walk the dog</span>
+      <button onclick="deleteTodo(this)" aria-label="Delete: Walk the dog">Delete</button>
+    </li>
+    <li class="todo-item" role="listitem">
+      <input type="checkbox" aria-label="Complete: Read a book" onchange="toggleTodo(this)">
+      <span class="todo-text">Read a book</span>
+      <button onclick="deleteTodo(this)" aria-label="Delete: Read a book">Delete</button>
+    </li>
+  </ul>
+
+  <script>
+    function addTodo() {
+      const input = document.getElementById('todo-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const li = document.createElement('li');
+      li.className = 'todo-item';
+      li.setAttribute('role', 'listitem');
+      li.innerHTML = `
+        <input type="checkbox" aria-label="Complete: ${text}" onchange="toggleTodo(this)">
+        <span class="todo-text">${text}</span>
+        <button onclick="deleteTodo(this)" aria-label="Delete: ${text}">Delete</button>
+      `;
+      document.getElementById('todo-list').appendChild(li);
+      input.value = '';
+    }
+
+    function toggleTodo(checkbox) {
+      const item = checkbox.closest('.todo-item');
+      item.classList.toggle('completed', checkbox.checked);
+    }
+
+    function deleteTodo(btn) {
+      btn.closest('.todo-item').remove();
+    }
+
+    document.getElementById('todo-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') addTodo();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchIt - Web Search</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #fff; }
+    .search-header { padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 16px; }
+    .logo { font-size: 24px; font-weight: bold; color: #1a73e8; }
+    .search-bar { display: flex; gap: 8px; flex: 1; max-width: 600px; }
+    .search-bar input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; font-size: 16px; }
+    .search-bar button { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 20px; cursor: pointer; }
+    .search-home { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; }
+    .search-home .logo { font-size: 48px; margin-bottom: 24px; }
+    .search-home .search-bar { width: 100%; max-width: 580px; }
+    .search-home .search-bar input { padding: 14px 20px; }
+    .results-page { display: none; }
+    .results { padding: 20px 20px 20px 160px; max-width: 800px; }
+    .result-item { margin-bottom: 24px; }
+    .result-item a { color: #1a0dab; font-size: 18px; text-decoration: none; }
+    .result-item a:hover { text-decoration: underline; }
+    .result-item .url { color: #006621; font-size: 14px; }
+    .result-item .snippet { color: #545454; font-size: 14px; margin-top: 4px; }
+    #result-page { display: none; padding: 40px; }
+    #result-page h1 { margin-bottom: 16px; }
+    #result-page p { line-height: 1.6; color: #333; }
+  </style>
+</head>
+<body>
+  <div id="home-page" class="search-home">
+    <div class="logo">SearchIt</div>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search the web..." aria-label="Search">
+      <button onclick="performSearch()" aria-label="Search">Search</button>
+    </div>
+  </div>
+
+  <div id="results-container" class="results-page">
+    <div class="search-header">
+      <div class="logo">SearchIt</div>
+      <div class="search-bar">
+        <input type="text" id="search-input-2" aria-label="Search">
+        <button onclick="performSearch()" aria-label="Search">Search</button>
+      </div>
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div id="result-page">
+    <h1 id="article-title"></h1>
+    <p id="article-content"></p>
+  </div>
+
+  <script>
+    const articles = {
+      "machine learning": [
+        { title: "Introduction to Machine Learning - ML Guide", url: "https://mlguide.org/intro", snippet: "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed." },
+        { title: "Machine Learning Course - Stanford Online", url: "https://stanford.edu/ml-course", snippet: "Free online machine learning course covering supervised learning, unsupervised learning, and best practices." },
+        { title: "What is Machine Learning? - TechExplained", url: "https://techexplained.com/ml", snippet: "A comprehensive guide to understanding machine learning algorithms, applications, and the future of AI." }
+      ],
+      "default": [
+        { title: "Welcome to the Web - Example", url: "https://example.com", snippet: "This is an example search result for your query." },
+        { title: "Learn More - Wikipedia", url: "https://wikipedia.org", snippet: "Wikipedia is a free online encyclopedia with articles on almost every topic." }
+      ]
+    };
+
+    function performSearch() {
+      const query = (document.getElementById('search-input').value || document.getElementById('search-input-2').value).trim().toLowerCase();
+      if (!query) return;
+
+      document.getElementById('home-page').style.display = 'none';
+      document.getElementById('results-container').style.display = 'block';
+      document.getElementById('search-input-2').value = query;
+
+      const results = articles[query] || articles["default"];
+      const html = results.map((r, i) => `
+        <div class="result-item">
+          <div class="url">${r.url}</div>
+          <a href="#" onclick="openResult('${r.title}', '${r.snippet}'); return false;">${r.title}</a>
+          <div class="snippet">${r.snippet}</div>
+        </div>
+      `).join('');
+      document.getElementById('results').innerHTML = html;
+    }
+
+    function openResult(title, content) {
+      document.getElementById('results-container').style.display = 'none';
+      document.getElementById('result-page').style.display = 'block';
+      document.getElementById('article-title').textContent = title;
+      document.getElementById('article-content').textContent = content;
+    }
+
+    document.getElementById('search-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') performSearch();
+    });
+  </script>
+</body>
+</html>

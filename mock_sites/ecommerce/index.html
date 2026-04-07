@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEasy - Online Store</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; }
+    header { background: #1a1a2e; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 22px; }
+    .cart-btn { background: #e94560; padding: 8px 16px; border-radius: 20px; color: white; border: none; cursor: pointer; font-size: 14px; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 24px; max-width: 1000px; margin: 0 auto; }
+    .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .product-card .img-placeholder { height: 160px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .product-info { padding: 16px; }
+    .product-info h3 { margin-bottom: 8px; }
+    .product-info .price { color: #e94560; font-size: 20px; font-weight: bold; margin-bottom: 12px; }
+    .product-info button { width: 100%; padding: 10px; background: #1a1a2e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .product-info button.added { background: #4CAF50; }
+    #checkout-page { display: none; padding: 40px; text-align: center; }
+    #checkout-page h2 { color: #4CAF50; margin-bottom: 16px; }
+    .cart-summary { display: none; background: white; padding: 20px; margin: 20px auto; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .cart-summary h2 { margin-bottom: 16px; }
+    .cart-summary .cart-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .checkout-btn { padding: 12px 24px; background: #e94560; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div id="shop-page">
+    <header>
+      <h1>ShopEasy</h1>
+      <button class="cart-btn" onclick="showCart()" aria-label="Shopping Cart">Cart (<span id="cart-count">0</span>)</button>
+    </header>
+
+    <div class="products" id="products">
+      <div class="product-card">
+        <div class="img-placeholder">🎧</div>
+        <div class="product-info">
+          <h3>Wireless Headphones</h3>
+          <div class="price">$79.99</div>
+          <button onclick="addToCart(this, 'Wireless Headphones', 79.99)" aria-label="Add to cart: Wireless Headphones">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="img-placeholder">⌨️</div>
+        <div class="product-info">
+          <h3>Mechanical Keyboard</h3>
+          <div class="price">$129.99</div>
+          <button onclick="addToCart(this, 'Mechanical Keyboard', 129.99)" aria-label="Add to cart: Mechanical Keyboard">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="img-placeholder">🖱️</div>
+        <div class="product-info">
+          <h3>Ergonomic Mouse</h3>
+          <div class="price">$49.99</div>
+          <button onclick="addToCart(this, 'Ergonomic Mouse', 49.99)" aria-label="Add to cart: Ergonomic Mouse">Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="img-placeholder">📱</div>
+        <div class="product-info">
+          <h3>Phone Stand</h3>
+          <div class="price">$19.99</div>
+          <button onclick="addToCart(this, 'Phone Stand', 19.99)" aria-label="Add to cart: Phone Stand">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-summary" id="cart-summary">
+      <h2>Your Cart</h2>
+      <div id="cart-items"></div>
+      <button class="checkout-btn" onclick="checkout()" aria-label="Proceed to Checkout">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <div id="checkout-page">
+    <h2>Checkout Complete!</h2>
+    <p>Thank you for your order. Your items will be shipped soon.</p>
+  </div>
+
+  <script>
+    const cart = [];
+
+    function addToCart(btn, name, price) {
+      cart.push({ name, price });
+      document.getElementById('cart-count').textContent = cart.length;
+      btn.textContent = 'Added!';
+      btn.classList.add('added');
+      setTimeout(() => {
+        btn.textContent = 'Add to Cart';
+        btn.classList.remove('added');
+      }, 1500);
+    }
+
+    function showCart() {
+      const summary = document.getElementById('cart-summary');
+      if (cart.length === 0) return;
+      summary.style.display = 'block';
+      const itemsHtml = cart.map(item => `
+        <div class="cart-item">
+          <span>${item.name}</span>
+          <span>$${item.price.toFixed(2)}</span>
+        </div>
+      `).join('');
+      const total = cart.reduce((s, i) => s + i.price, 0);
+      document.getElementById('cart-items').innerHTML = itemsHtml + `
+        <div class="cart-item" style="font-weight:bold; border-top: 2px solid #333; margin-top: 8px; padding-top: 8px;">
+          <span>Total</span>
+          <span>$${total.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
+    function checkout() {
+      document.getElementById('shop-page').style.display = 'none';
+      document.getElementById('checkout-page').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
