@@ -164,7 +164,21 @@ async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
     if IMAGE_NAME:
-        env = await DalaalEnvEnv.from_docker_image(IMAGE_NAME)
+        from openenv.core.containers.runtime import LocalDockerProvider
+        provider = LocalDockerProvider()
+        base_url = provider.start_container(IMAGE_NAME)
+        provider.wait_for_ready(base_url, timeout_s=60.0)
+        env = DalaalEnvEnv(base_url=base_url, provider=provider)
+        # Retry WebSocket connect — server may need extra time after health check passes
+        for attempt in range(5):
+            try:
+                await env.connect()
+                break
+            except (ConnectionError, OSError) as e:
+                if attempt == 4:
+                    raise
+                print(f"[DEBUG] WS connect attempt {attempt + 1} failed: {e}, retrying...", flush=True)
+                await asyncio.sleep(3)
     else:
         env = DalaalEnvEnv(base_url=os.getenv("DALAAL_ENV_URL", "http://localhost:8000"))
         await env.connect()
