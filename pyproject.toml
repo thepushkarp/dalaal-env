@@ -1,9 +1,35 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "dalaal-env"
+name = "openenv-dalaal-env"
 version = "0.1.0"
-description = "Add your description here"
+description = "Browser-Use RL environment where agents learn to interact with web pages through accessibility tree observations"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
-    "openenv-core>=0.2.3",
+    "openenv-core[core]>=0.2.2",
+    "playwright>=1.40.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.24.0",
+    "openai>=2.30.0",
+    "huggingface-hub>=1.9.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.scripts]
+server = "dalaal_env.server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["dalaal_env", "dalaal_env.server"]
+package-dir = { "dalaal_env" = ".", "dalaal_env.server" = "server" }
+
+[tool.setuptools.package-data]
+"dalaal_env" = ["mock_sites/**/*.html"]
