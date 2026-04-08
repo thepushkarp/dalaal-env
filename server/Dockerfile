@@ -7,36 +7,16 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
-ARG BUILD_MODE=in-repo
-ARG ENV_NAME=dalaal_env
-
 COPY . /app/env
 
 WORKDIR /app/env
 
-RUN if ! command -v uv >/dev/null 2>&1; then \
-        curl -LsSf https://astral.sh/uv/install.sh | sh && \
-        mv /root/.local/bin/uv /usr/local/bin/uv && \
-        mv /root/.local/bin/uvx /usr/local/bin/uvx; \
-    fi
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    if [ -f uv.lock ]; then \
-        uv sync --frozen --no-install-project --no-editable; \
-    else \
-        uv sync --no-install-project --no-editable; \
-    fi
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    if [ -f uv.lock ]; then \
-        uv sync --frozen --no-editable; \
-    else \
-        uv sync --no-editable; \
-    fi
+# Install deps with pip into system Python
+RUN pip install --no-cache-dir -e ".[server]" 2>/dev/null || pip install --no-cache-dir -e .
 
 # Install Playwright and Chromium browser
-RUN /app/env/.venv/bin/playwright install chromium && \
-    /app/env/.venv/bin/playwright install-deps chromium
+RUN playwright install chromium && \
+    playwright install-deps chromium
 
 # Final runtime stage
 FROM ${BASE_IMAGE}
@@ -53,17 +33,16 @@ RUN apt-get update && \
     libwayland-client0 fonts-noto-color-emoji curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy the virtual environment from builder (includes Playwright browsers)
-COPY --from=builder /app/env/.venv /app/.venv
+# Copy installed packages and app code from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /app/env /app/env
 COPY --from=builder /root/.cache/ms-playwright /root/.cache/ms-playwright
 
-# Copy the environment code
-COPY --from=builder /app/env /app/env
-
-ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/env:$PYTHONPATH"
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["sh", "-c", "cd /app/env && uvicorn server.app:app --host 0.0.0.0 --port 8000"]
+WORKDIR /app/env
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
